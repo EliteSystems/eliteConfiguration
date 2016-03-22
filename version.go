@@ -5,7 +5,7 @@ import "fmt"
 const (
 	version = "0"
 	release = "0"
-	feature = "002"
+	feature = "003"
 )
 
 /**
