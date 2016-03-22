@@ -5,19 +5,20 @@ import "fmt"
 const (
 	version = "0"
 	release = "0"
-	feature = "003"
+	hotfix  = "0"
+	feature = "004"
 )
 
 /**
-Get the complete API's version
+Get the complete Library's version
 */
 func Version() string {
-	return version + "." + release + "." + feature
+	return version + "." + release + "." + hotfix + "." + feature
 }
 
 /**
-Print the complete API's version
+Print the complete Library's version
 */
-func VersionPrint() {
-	fmt.Println(Version())
+func PrintVersion() {
+	fmt.Println("EliteConfiguration " + Version())
 }

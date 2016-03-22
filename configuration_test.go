@@ -10,6 +10,13 @@ var (
 )
 
 /*
+Print the tested Library's version
+*/
+func TestVersion(t *testing.T) {
+	eliteConfiguration.PrintVersion()
+}
+
+/*
 Try to create New Configuration from valid JSON content
 */
 func TestNew(t *testing.T) {
