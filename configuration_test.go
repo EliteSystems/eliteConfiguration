@@ -50,8 +50,12 @@ Try to Add a Property to the Test Configuration
 */
 func TestConfigurationAddProperty(t *testing.T) {
 	if configuration, err := eliteConfiguration.New(jsonContent); err == nil {
-		if _, ok := configuration.AddProperty(eliteConfiguration.Property{Key: "KeyAdded", Value: "ValueAdded"}).Properties["KeyAdded"]; !ok {
+		configuration = configuration.AddProperty(eliteConfiguration.Property{Key: "KeyAdded", Value: "ValueAdded"})
+		if _, ok := configuration.Properties["KeyAdded"]; !ok {
 			t.Errorf("Property [\"KeyAdded\"] should exist")
+		}
+		if _, ok := configuration.Properties["Property1"]; !ok {
+			t.Errorf("Property [\"Property1\"] should exist")
 		}
 	}
 }
