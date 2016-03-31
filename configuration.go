@@ -28,18 +28,18 @@ type Property struct {
 }
 
 /**
-Error thrown when fail to load Configuration
+Error thrown when fail to load/save Configuration
 */
-type LoadError struct {
-	File string
-	Err  error
+type MessageError struct {
+	Message string
+	Err     error
 }
 
 /**
-LoadError's message
+FileError's message
 */
-func (e *LoadError) Error() string {
-	return fmt.Sprintf("[EliteConfiguration - %v] Can't Load %v\nCause : %v", Version(), e.File, e.Err.Error())
+func (e MessageError) Error() string {
+	return fmt.Sprintf("[EliteConfiguration - %v] Can't Load %v\nCause : %v", Version(), e.Message, e.Err.Error())
 }
 
 /**
@@ -71,7 +71,7 @@ func Load(fileName string) (configuration *Configuration, loadError error) {
 	// Try to read the file
 	jsonContent, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		loadError = &LoadError{File: fileName, Err: err}
+		loadError = &MessageError{File: fileName, Err: err}
 		return
 	}
 
@@ -81,4 +81,11 @@ func Load(fileName string) (configuration *Configuration, loadError error) {
 	}
 
 	return
+}
+
+/**
+Serialise a Configuration to JSON
+*/
+func (configuration *Configuration) ToJSON() ([]byte, error) {
+	return json.Marshal(configuration)
 }

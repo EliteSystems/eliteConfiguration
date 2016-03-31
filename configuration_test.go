@@ -1,12 +1,14 @@
 package eliteConfiguration_test
 
 import (
+	"bytes"
 	"github.com/EliteSystems/eliteConfiguration"
 	"testing"
 )
 
 var (
-	jsonContent = []byte("{\"Name\": \"ConfigurationName\", \"Properties\": {\"Property1\": {\"Key\":\"Key1\", \"Value\":\"Value1\"}, \"Property2\": {\"Key\":\"Key2\", \"Value\":\"Value2\"}}}")
+	jsonContent                                     = []byte("{\"Name\":\"ConfigurationName\",\"Properties\":{\"Property1\":{\"Key\":\"Key1\",\"Value\":\"Value1\"},\"Property2\":{\"Key\":\"Key2\",\"Value\":\"Value2\"}}}")
+	configuration *eliteConfiguration.Configuration = &eliteConfiguration.Configuration{Name: "ConfigurationName"}
 )
 
 /*
@@ -57,5 +59,18 @@ func TestConfigurationAddProperty(t *testing.T) {
 		if _, ok := configuration.Properties["Property1"]; !ok {
 			t.Errorf("Property [\"Property1\"] should exist")
 		}
+	}
+}
+
+/*
+Try to JSON a Configuration
+*/
+func TestToJSON(t *testing.T) {
+	configuration, _ := eliteConfiguration.New(jsonContent)
+	switch jsonRetour, err := configuration.ToJSON(); true {
+	case err != nil:
+		t.Errorf("Configuration.ToJSON should not throw exception")
+	case !bytes.Equal(jsonRetour, jsonContent):
+		t.Errorf("Configuration.ToJSON should return %s not %s", jsonContent, jsonRetour)
 	}
 }
