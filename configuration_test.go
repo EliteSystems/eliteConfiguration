@@ -20,7 +20,6 @@ func TestVersion(t *testing.T) {
 Try to create New Configuration from valid JSON content
 */
 func TestNew(t *testing.T) {
-
 	switch configuration, err := eliteConfiguration.New(jsonContent); true {
 	case err != nil:
 		t.Errorf(err.Error())
@@ -43,5 +42,20 @@ func TestNewWithInvalidJSON(t *testing.T) {
 	switch _, err := eliteConfiguration.New(incompleteJSONContent); true {
 	case err == nil:
 		t.Errorf("New() method should be throw an error")
+	}
+}
+
+/*
+Try to Add a Property to the Test Configuration
+*/
+func TestConfigurationAddProperty(t *testing.T) {
+	if configuration, err := eliteConfiguration.New(jsonContent); err == nil {
+		configuration = configuration.AddProperty(eliteConfiguration.Property{Key: "KeyAdded", Value: "ValueAdded"})
+		if _, ok := configuration.Properties["KeyAdded"]; !ok {
+			t.Errorf("Property [\"KeyAdded\"] should exist")
+		}
+		if _, ok := configuration.Properties["Property1"]; !ok {
+			t.Errorf("Property [\"Property1\"] should exist")
+		}
 	}
 }

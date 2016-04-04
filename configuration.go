@@ -43,9 +43,30 @@ func (e *LoadError) Error() string {
 }
 
 /**
+Add a Property to a Configuration
+*/
+func (configuration *Configuration) AddProperty(property Property) *Configuration {
+	configuration.Properties[property.Key] = property
+	return configuration
+}
+
+/**
+Return New Configuration struct from JSON content
+*/
+func New(jsonContent []byte) (configuration *Configuration, loadError error) {
+
+	if err := json.Unmarshal(jsonContent, &configuration); err != nil {
+		loadError = &LoadError{File: "jsonContent", Err: err}
+		return
+	}
+
+	return
+}
+
+/**
 Load fileName with valid JSON Content into a Configuration struct
 */
-func Load(fileName string) (configuration *Configuration, loadError *LoadError) {
+func Load(fileName string) (configuration *Configuration, loadError error) {
 
 	// Try to read the file
 	jsonContent, err := ioutil.ReadFile(fileName)
@@ -57,19 +78,6 @@ func Load(fileName string) (configuration *Configuration, loadError *LoadError) 
 	if configuration, loadError = New(jsonContent); loadError == nil {
 		// Adding/Replacing RootPath to configuration
 		configuration.Properties[RootPathKey] = Property{Key: RootPathKey, Value: path.Dir(fileName)}
-	}
-
-	return
-}
-
-/**
-Return New Configuration struct from JSON content
-*/
-func New(jsonContent []byte) (configuration *Configuration, loadError *LoadError) {
-
-	if err := json.Unmarshal(jsonContent, &configuration); err != nil {
-		loadError = &LoadError{File: "jsonContent", Err: err}
-		return
 	}
 
 	return
