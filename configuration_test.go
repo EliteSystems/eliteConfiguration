@@ -2,13 +2,15 @@ package eliteConfiguration_test
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/EliteSystems/eliteConfiguration"
+	"os"
 	"testing"
 )
 
 var (
-	jsonContent                                     = []byte("{\"Name\":\"ConfigurationName\",\"Properties\":{\"Property1\":{\"Key\":\"Key1\",\"Value\":\"Value1\"},\"Property2\":{\"Key\":\"Key2\",\"Value\":\"Value2\"}}}")
-	configuration *eliteConfiguration.Configuration = &eliteConfiguration.Configuration{Name: "ConfigurationName"}
+	jsonContent                                    = []byte("{\"Name\":\"ConfigurationName\",\"Properties\":{\"Property1\":{\"Key\":\"Key1\",\"Value\":\"Value1\"},\"Property2\":{\"Key\":\"Key2\",\"Value\":\"Value2\"}}}")
+	configuration eliteConfiguration.Configuration = eliteConfiguration.Configuration{Name: "ConfigurationName"}
 )
 
 /*
@@ -40,6 +42,7 @@ func TestNew(t *testing.T) {
 Try to create New Configuration from invalid JSON content
 */
 func TestNewWithInvalidJSON(t *testing.T) {
+
 	incompleteJSONContent := jsonContent[1:]
 	switch _, err := eliteConfiguration.New(incompleteJSONContent); true {
 	case err == nil:
@@ -66,11 +69,37 @@ func TestConfigurationAddProperty(t *testing.T) {
 Try to JSON a Configuration
 */
 func TestToJSON(t *testing.T) {
+
 	configuration, _ := eliteConfiguration.New(jsonContent)
 	switch jsonRetour, err := configuration.ToJSON(); true {
 	case err != nil:
 		t.Errorf("Configuration.ToJSON should not throw exception")
 	case !bytes.Equal(jsonRetour, jsonContent):
 		t.Errorf("Configuration.ToJSON should return %s not %s", jsonContent, jsonRetour)
+	}
+}
+
+/*
+Try to Save a Configuration to File
+*/
+func TestSave(t *testing.T) {
+
+	configuration, _ := eliteConfiguration.New(jsonContent)
+	rightFileName := "./conf.json"
+	wrongFileName := "./xxxxx/conf.json"
+
+	if err := configuration.Save(""); err == nil {
+		t.Errorf("Configuration.Save should return error for empty file")
+	}
+
+	if err := configuration.Save(wrongFileName); err == nil {
+		t.Errorf("Configuration.Save should return error for non existing directory")
+	}
+	fmt.Println(os.Getwd())
+
+	if err := configuration.Save(rightFileName); err != nil {
+		t.Errorf("Configuration.Save should return error for non existing directory")
+	} else {
+		os.Remove(rightFileName)
 	}
 }
