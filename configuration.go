@@ -1,6 +1,7 @@
 package eliteConfiguration
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,6 +9,7 @@ import (
 )
 
 const (
+	// Key to access Configuration's RootPath
 	RootPathKey = "RootPath"
 )
 
@@ -28,18 +30,18 @@ type Property struct {
 }
 
 /**
-Error thrown when fail to load Configuration
+Add personalised message to a system error
 */
-type LoadError struct {
-	File string
-	Err  error
+type MessageError struct {
+	Message string
+	Err     error
 }
 
 /**
-LoadError's message
+MessageError's message
 */
-func (e *LoadError) Error() string {
-	return fmt.Sprintf("[EliteConfiguration - %v] Can't Load %v\nCause : %v", Version(), e.File, e.Err.Error())
+func (e MessageError) Error() string {
+	return fmt.Sprintf("[EliteConfiguration - %v] Can't Load %v\nCause : %v", Version(), e.Message, e.Err.Error())
 }
 
 /**
@@ -51,13 +53,51 @@ func (configuration *Configuration) AddProperty(property Property) *Configuratio
 }
 
 /**
+Return JSON content from a Configuration struct
+*/
+func (configuration *Configuration) ToJSON() (jsonContent []byte, messageError error) {
+
+	jsonContent, err := json.Marshal(configuration)
+	if err != nil {
+		messageError = MessageError{Message: "Configuration.ToJSON()", Err: err}
+	}
+
+	return
+}
+
+/**
+Save a JSON's serialized and indented Configuration struct to file
+*/
+func (configuration *Configuration) Save(fileName string) (messageError error) {
+
+	// Serialize Configuration struct to JSON
+	jsonContent, messageError := configuration.ToJSON()
+
+	if messageError == nil {
+
+		// Indent JSON content for better readability
+		var jsonIndentedContent bytes.Buffer
+		if err := json.Indent(&jsonIndentedContent, jsonContent, "", "\t"); err != nil {
+			messageError = MessageError{Message: "json.Indent()", Err: err}
+		}
+
+		// Write JSON content to fileName
+		if err := ioutil.WriteFile(fileName, jsonIndentedContent.Bytes(), 0600); err != nil {
+			messageError = MessageError{Message: fileName, Err: err}
+		}
+	}
+
+	return
+}
+
+/**
 Return New Configuration struct from JSON content
 */
-func New(jsonContent []byte) (configuration *Configuration, loadError error) {
+func New(jsonContent []byte) (configuration *Configuration, messageError error) {
 
+	// Deserialize JSON content into Configuration struct
 	if err := json.Unmarshal(jsonContent, &configuration); err != nil {
-		loadError = &LoadError{File: "jsonContent", Err: err}
-		return
+		messageError = MessageError{Message: "eliteConfiguration.New(jsonContent)", Err: err}
 	}
 
 	return
@@ -66,17 +106,17 @@ func New(jsonContent []byte) (configuration *Configuration, loadError error) {
 /**
 Load fileName with valid JSON Content into a Configuration struct
 */
-func Load(fileName string) (configuration *Configuration, loadError error) {
+func Load(fileName string) (configuration *Configuration, messageError error) {
 
-	// Try to read the file
+	// Read fileName
 	jsonContent, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		loadError = &LoadError{File: fileName, Err: err}
+		messageError = MessageError{Message: fileName, Err: err}
 		return
 	}
 
-	if configuration, loadError = New(jsonContent); loadError == nil {
-		// Adding/Replacing RootPath to configuration
+	// Add/Replace RootPath to configuration
+	if configuration, messageError = New(jsonContent); messageError == nil {
 		configuration.Properties[RootPathKey] = Property{Key: RootPathKey, Value: path.Dir(fileName)}
 	}
 
