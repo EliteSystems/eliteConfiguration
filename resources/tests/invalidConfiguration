@@ -1,0 +1,15 @@
+"Name":"invalidConfiguration",
+"Properties": {
+"Key1": {
+  "Key":"Key1",
+  "Value":"Value1"
+},
+"Key2": {
+  "Key":"Key2",
+  "Value":"Value2"
+},
+"Key3": {
+  "Key":"Key3",
+  "Value":"Value3"
+}
+}
