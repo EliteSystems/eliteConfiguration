@@ -6,7 +6,7 @@ const (
 	version = "0"
 	release = "0"
 	hotfix  = "0"
-	feature = "006"
+	feature = "7"
 )
 
 /**

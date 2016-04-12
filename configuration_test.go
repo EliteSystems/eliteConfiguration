@@ -2,15 +2,27 @@ package eliteConfiguration_test
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/EliteSystems/eliteConfiguration"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
 var (
-	jsonContent                                    = []byte("{\"Name\":\"ConfigurationName\",\"Properties\":{\"Property1\":{\"Key\":\"Key1\",\"Value\":\"Value1\"},\"Property2\":{\"Key\":\"Key2\",\"Value\":\"Value2\"}}}")
-	configuration eliteConfiguration.Configuration = eliteConfiguration.Configuration{Name: "ConfigurationName"}
+	testsPath                    = filepath.FromSlash("./resources/tests/")
+	validConfigurationFile       = testsPath + "validConfiguration.json"
+	invalidConfigurationFile     = testsPath + "invalidConfiguration"
+	emptyConfigurationFile       = testsPath + "emptyConfiguration.json"
+	nonExistingConfigurationFile = testsPath + "notExistConfiguration.json"
+	nonExistingPath              = testsPath + filepath.FromSlash("not/existing/path/")
+	zeroValueConfiguration       = eliteConfiguration.Configuration{}
+	zeroValueProperty            = eliteConfiguration.Property{}
+	validConfiguration           = eliteConfiguration.Configuration{Name: "validConfiguration",
+		Properties: map[string]eliteConfiguration.Property{
+			"Key1": eliteConfiguration.Property{Key: "Key1", Value: "Value1"},
+			"Key2": eliteConfiguration.Property{Key: "Key2", Value: "Value2"},
+			"Key3": eliteConfiguration.Property{Key: "Key3", Value: "Value3"}}}
 )
 
 /*
@@ -21,85 +33,121 @@ func TestVersion(t *testing.T) {
 }
 
 /*
-Try to create New Configuration from valid JSON content
+Try to Load a Configuration from valid JSON file
 */
-func TestNew(t *testing.T) {
-	switch configuration, err := eliteConfiguration.New(jsonContent); true {
+func TestLoadValidConfiguration(t *testing.T) {
+
+	switch configuration, err := eliteConfiguration.Load(validConfigurationFile); true {
+
 	case err != nil:
 		t.Errorf(err.Error())
-	case configuration.Name != "ConfigurationName":
-		t.Errorf("Configuration.Name should be \"ConfigurationName\"")
-	case len(configuration.Properties) != 2:
-		t.Errorf("Configuration should have 2 Properties")
-	case configuration.Properties["Property1"].Key != "Key1":
-		t.Errorf("Configuration.Properties[\"Property1\"].Key should be \"Key1\"")
-	case configuration.Properties["Property1"].Value != "Value1":
-		t.Errorf("Configuration.Properties[\"Property1\"].Value should be \"Value1\"")
+
+	case configuration.Name != "validConfiguration":
+		t.Errorf("Configuration.Name should be \"validConfiguration\"")
+
+	case len(configuration.Properties) != 4:
+		t.Errorf("Configuration should have 4 Properties")
+
+	case configuration.Properties["Key1"].Key != "Key1":
+		t.Errorf("Configuration.Properties[\"Key1\"].Key should be \"Key1\"")
+
+	case configuration.Properties["Key1"].Value != "Value1":
+		t.Errorf("Configuration.Properties[\"Key1\"].Value should be \"Value1\"")
+
+	case configuration.Properties[eliteConfiguration.RootPathKey] == zeroValueProperty:
+		t.Errorf("Configuration.Properties[\"%v\"] should exist", eliteConfiguration.RootPathKey)
+
+	case configuration.Properties["inexistingKey"] != zeroValueProperty:
+		t.Errorf("Configuration.Properties[\"inexistingKey\"] should not exist")
 	}
 }
 
 /*
-Try to create New Configuration from invalid JSON content
+Try to Load a Configuration from valid JSON file
 */
-func TestNewWithInvalidJSON(t *testing.T) {
+func TestLoadInvalidConfiguration(t *testing.T) {
 
-	incompleteJSONContent := jsonContent[1:]
-	switch _, err := eliteConfiguration.New(incompleteJSONContent); true {
-	case err == nil:
-		t.Errorf("New() method should be throw an error")
+	if _, err := eliteConfiguration.Load(invalidConfigurationFile); err == nil {
+		t.Errorf("Load invalid Configuration should has return an error")
 	}
 }
 
 /*
-Try to Add a Property to the Test Configuration
+Try to Load a Configuration from valid JSON file
+*/
+func TestLoadEmptyConfiguration(t *testing.T) {
+
+	switch configuration, _ := eliteConfiguration.Load(emptyConfigurationFile); true {
+
+	case len(configuration.Properties) == 0:
+		t.Errorf("EmptyConfiguration should contains the rootPath Property")
+	}
+}
+
+/*
+Try to Load a Configuration from non-existent file
+*/
+func TestLoadNonExistentConfiguration(t *testing.T) {
+
+	if _, err := eliteConfiguration.Load(nonExistingConfigurationFile); err == nil {
+		t.Errorf("Non existent file should has return an error")
+	}
+}
+
+/*
+Try to Add a Property to an empty Configuration
 */
 func TestConfigurationAddProperty(t *testing.T) {
-	if configuration, err := eliteConfiguration.New(jsonContent); err == nil {
-		configuration = configuration.AddProperty(eliteConfiguration.Property{Key: "KeyAdded", Value: "ValueAdded"})
-		if _, ok := configuration.Properties["KeyAdded"]; !ok {
-			t.Errorf("Property [\"KeyAdded\"] should exist")
-		}
-		if _, ok := configuration.Properties["Property1"]; !ok {
-			t.Errorf("Property [\"Property1\"] should exist")
-		}
+
+	switch configuration := zeroValueConfiguration.AddProperty("KeyAdded", "ValueAdded"); true {
+	case configuration.Properties["KeyAdded"] == zeroValueProperty:
+		t.Errorf("Property [\"KeyAdded\"] should exist")
+	case configuration.Properties["KeyAdded"].Value != "ValueAdded":
+		t.Errorf("Value should be \"ValueAdded\" for Property \"KeyAdded\"")
 	}
 }
 
 /*
-Try to JSON a Configuration
+Try to Save a Configuration with passing no file in argument
 */
-func TestToJSON(t *testing.T) {
+func TestConfigurationSaveWithNoFile(t *testing.T) {
 
-	configuration, _ := eliteConfiguration.New(jsonContent)
-	switch jsonRetour, err := configuration.ToJSON(); true {
-	case err != nil:
-		t.Errorf("Configuration.ToJSON should not throw exception")
-	case !bytes.Equal(jsonRetour, jsonContent):
-		t.Errorf("Configuration.ToJSON should return %s not %s", jsonContent, jsonRetour)
+	if err := validConfiguration.Save(""); err == nil {
+		t.Errorf("Configuration.Save() should return an error when passing no file")
 	}
 }
 
 /*
-Try to Save a Configuration to File
+Try to Save a Configuration in an non existent path
 */
-func TestSave(t *testing.T) {
+func TestConfigurationSaveWithNonExistentPath(t *testing.T) {
 
-	configuration, _ := eliteConfiguration.New(jsonContent)
-	rightFileName := "./conf.json"
-	wrongFileName := "./xxxxx/conf.json"
-
-	if err := configuration.Save(""); err == nil {
-		t.Errorf("Configuration.Save should return error for empty file")
-	}
-
-	if err := configuration.Save(wrongFileName); err == nil {
-		t.Errorf("Configuration.Save should return error for non existing directory")
-	}
-	fmt.Println(os.Getwd())
-
-	if err := configuration.Save(rightFileName); err != nil {
-		t.Errorf("Configuration.Save should return error for non existing directory")
+	if _, err := os.Stat(nonExistingPath); os.IsNotExist(err) {
+		if err := validConfiguration.Save(nonExistingPath + "file.json"); err == nil {
+			t.Errorf("Configuration.Save() should return error for non existing directory")
+		}
 	} else {
-		os.Remove(rightFileName)
+		t.Errorf("Test can't be performed, the path %v should not exist", nonExistingPath)
 	}
+}
+
+/*
+Try to Save a Configuration in an existent path and Compare result file with valid
+*/
+func TestConfigurationSaveWithExistentPath(t *testing.T) {
+
+	// Verify that Save() don't throw any error
+	if err := validConfiguration.Save(testsPath + "save.json"); err != nil {
+		t.Errorf("Configuration.Save() should not return an error")
+	}
+
+	// Compare the saved file content with the validConfigurationFile content
+	if jsonContent, err := ioutil.ReadFile(testsPath + "save.json"); err == nil {
+		if compareContent, _ := ioutil.ReadFile(validConfigurationFile); err == nil && bytes.Compare(jsonContent, compareContent) == 0 {
+			t.Errorf("Configuration.Save() the JSON content saved is not equal to validConfiguration.json file")
+		}
+	}
+
+	// Clean files added
+	os.Remove(testsPath + "save.json")
 }
