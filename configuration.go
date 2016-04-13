@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2016 EliteSystems. All rights reserved.
+
+eliteConfiguration lets you Load/Save Configuration from/to files with JSON content.
+*/
 package eliteConfiguration
 
 import (
@@ -8,13 +13,15 @@ import (
 	"path"
 )
 
+/*
+RootPathKey is the Key to access the Configuration's RootPath
+*/
 const (
-	// Key to access Configuration's RootPath
 	RootPathKey = "RootPath"
 )
 
 /*
-Configuration is a set of Properties accessed by their Key
+Configuration is a struct with a Name and a set of Properties accessed by their Key
 */
 type Configuration struct {
 	Name       string
@@ -22,15 +29,15 @@ type Configuration struct {
 }
 
 /*
-Configuration's Property
+Property is a struct with a Name and a Value
 */
 type Property struct {
-	Key   string
+	Name  string
 	Value interface{}
 }
 
 /*
-Add personalised message to a system error
+ConfigurationError report errors thrown by system with a personalised message
 */
 type ConfigurationError struct {
 	Message string
@@ -38,22 +45,22 @@ type ConfigurationError struct {
 }
 
 /*
-MessageError's message
+Error get the ConfigurationError's complete message
 */
 func (e ConfigurationError) Error() string {
 	return fmt.Sprintf("[EliteConfiguration - %v] Can't Load %v\nCause : %v", Version(), e.Message, e.Err.Error())
 }
 
 /*
-Add a Property to a Configuration
+AddProperty add a Property to the Configuration
 */
 func (configuration *Configuration) AddProperty(key string, value interface{}) *Configuration {
-	configuration.initializeProperties().Properties[key] = Property{Key: key, Value: value}
+	configuration.initializeProperties().Properties[key] = Property{Name: key, Value: value}
 	return configuration
 }
 
 /*
-Initialize the map properties if needed
+initializeProperties init the map Configuration's Properties's map if needed
 */
 func (configuration *Configuration) initializeProperties() *Configuration {
 	if configuration.Properties == nil {
@@ -63,7 +70,7 @@ func (configuration *Configuration) initializeProperties() *Configuration {
 }
 
 /*
-Return JSON content from a Configuration struct
+toJSON return JSON's content from the Configuration
 */
 func (configuration Configuration) toJSON() (jsonContent []byte, messageError error) {
 
@@ -76,7 +83,7 @@ func (configuration Configuration) toJSON() (jsonContent []byte, messageError er
 }
 
 /*
-Save a JSON's serialized and indented Configuration struct to file
+Save the Configuration to fileName in indented JSON format
 */
 func (configuration Configuration) Save(fileName string) (messageError error) {
 
@@ -101,7 +108,7 @@ func (configuration Configuration) Save(fileName string) (messageError error) {
 }
 
 /*
-Return New Configuration struct from JSON content
+newFromJSON return a new Configuration from the jsonContent
 */
 func newFromJSON(jsonContent []byte) (configuration Configuration, messageError error) {
 
@@ -114,7 +121,7 @@ func newFromJSON(jsonContent []byte) (configuration Configuration, messageError 
 }
 
 /*
-Load fileName with valid JSON Content into a Configuration struct
+Load fileName with valid JSON Content into a returned Configuration
 */
 func Load(fileName string) (configuration Configuration, messageError error) {
 
@@ -127,8 +134,12 @@ func Load(fileName string) (configuration Configuration, messageError error) {
 
 	// Add/Replace RootPath to configuration
 	if configuration, messageError = newFromJSON(jsonContent); messageError == nil {
-		configuration.Properties[RootPathKey] = Property{Key: RootPathKey, Value: path.Dir(fileName)}
+		configuration.Properties[RootPathKey] = Property{Name: RootPathKey, Value: path.Dir(fileName)}
 	}
 
 	return
 }
+
+//TODO: add method GetValue(key string) Interface{} to get the Value of a Property
+
+//TODO: Change API into fully immutable API (ChangeName, SetProperty, GetProperty, GetValue)
