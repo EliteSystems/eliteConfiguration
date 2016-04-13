@@ -1,0 +1,17 @@
+{
+  "Name":"validConfiguration",
+  "Properties": {
+    "Key1": {
+      "Name":"Key1",
+      "Value":"Value1"
+    },
+    "Key2": {
+      "Name":"Key2",
+      "Value":"Value2"
+    },
+    "Key3": {
+      "Name":"Key3",
+      "Value":"Value3"
+    }
+  }
+}
