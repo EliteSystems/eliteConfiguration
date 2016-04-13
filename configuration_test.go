@@ -20,9 +20,9 @@ var (
 	zeroValueProperty            = eliteConfiguration.Property{}
 	validConfiguration           = eliteConfiguration.Configuration{Name: "validConfiguration",
 		Properties: map[string]eliteConfiguration.Property{
-			"Key1": eliteConfiguration.Property{Key: "Key1", Value: "Value1"},
-			"Key2": eliteConfiguration.Property{Key: "Key2", Value: "Value2"},
-			"Key3": eliteConfiguration.Property{Key: "Key3", Value: "Value3"}}}
+			"Key1": eliteConfiguration.Property{Name: "Key1", Value: "Value1"},
+			"Key2": eliteConfiguration.Property{Name: "Key2", Value: "Value2"},
+			"Key3": eliteConfiguration.Property{Name: "Key3", Value: "Value3"}}}
 )
 
 /*
@@ -48,8 +48,8 @@ func TestLoadValidConfiguration(t *testing.T) {
 	case len(configuration.Properties) != 4:
 		t.Errorf("Configuration should have 4 Properties")
 
-	case configuration.Properties["Key1"].Key != "Key1":
-		t.Errorf("Configuration.Properties[\"Key1\"].Key should be \"Key1\"")
+	case configuration.Properties["Key1"].Name != "Key1":
+		t.Errorf("Configuration.Properties[\"Key1\"].Name should be \"Key1\"")
 
 	case configuration.Properties["Key1"].Value != "Value1":
 		t.Errorf("Configuration.Properties[\"Key1\"].Value should be \"Value1\"")

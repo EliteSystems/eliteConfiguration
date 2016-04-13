@@ -10,14 +10,14 @@ const (
 )
 
 /**
-Get the complete Library's version
+Version get the complete Library's version
 */
 func Version() string {
 	return version + "." + release + "." + hotfix + "." + feature
 }
 
 /**
-Print the complete Library's version
+PrintVersion print the complete Library's version to standard output
 */
 func PrintVersion() {
 	fmt.Println("EliteConfiguration " + Version())
