@@ -140,6 +140,8 @@ func Load(fileName string) (configuration Configuration, messageError error) {
 	return
 }
 
-//TODO: add method GetValue(key string) Interface{} to get the Value of a Property
+// TODO: use Alias "config" for package eliteConfiguration in tests
 
-//TODO: Change API into fully immutable API (ChangeName, SetProperty, GetProperty, GetValue)
+// TODO: add method GetValue(key string) Interface{} to get the Value of a Property
+
+// TODO: change API into fully immutable API (ChangeName, SetProperty, GetProperty, GetValue)
