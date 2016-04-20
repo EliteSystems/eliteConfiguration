@@ -1,0 +1,58 @@
+= eliteConfiguration image:go-documentation-blue.svg[GoDoc, link="http://godoc.org/github.com/EliteSystems/eliteConfiguration", role="external", window="_blank"]
+Cédric LARA-MARTIL <git@cedric.laramartil.fr>, Christophe MARTY <git@chrismarty.fr>
+v0.1, April 2016: First documentation's review
+:authorinitials: @cLaraMartil & @chrismarty34
+:doctype: article
+:source-highlighter: coderay
+:imagesdir: documentation/images
+:icons:
+:toc:
+//:numbered:
+//:source-highlighter: pigments
+//:pdf-page-size: A4
+
+*eliteConfiguration* lets you load/save _GoLang_ *Configurations* _structs_ from/to JSON's files, and manipulate them.
+
+== How to install
+[source, bash]
+----
+$ go get github.com/EliteSystems/eliteConfiguration
+----
+
+== Examples
+
+=== Load Configuration from JSON file
+
+[source, go]
+----
+package main
+import config "github.com/EliteSystems/eliteConfiguration"
+...
+// Load Configuration from file "./conf.json"
+if configuration, err := config.Load("./conf.json"); err == nil {
+        // Access to RootPath Property (Always exists after Loading Configuration from file)
+        rootPath string := configuration.Properties[config.RootPathKey].Value
+}
+----
+
+=== Save Configuration to JSON file
+
+[source, go]
+----
+package main
+import config "github.com/EliteSystems/eliteConfiguration"
+...
+// Create Configuration
+configuration := config.Configuration{}
+...
+// save Configuration to file "./conf.json"
+err := configuration.Save("./conf.json")
+----
+
+== Releases notes
+
+=== 0.1
+
+* Adding function "Load(fileName string) (Configuration, error)" to Load a JSON configuration file with a Property "RootPathKey" in all cases.
+* Adding method &quot;Configuration.AddProperty(key string, value interface{}) *Configuration&quot; to add/replace a Configuration's Property.
+* Adding method "Configuration.Save(fileName string) error" to save Configuration into fileName (with indented JSON content).
