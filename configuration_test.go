@@ -2,15 +2,21 @@ package eliteConfiguration_test
 
 import (
 	"bytes"
+	"errors"
 	"github.com/EliteSystems/eliteConfiguration"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
 var (
 	testsPath                    = filepath.FromSlash("./resources/tests/")
+	errorCause                   = errors.New("Cause error")
+	fullFilledConfigurationError = eliteConfiguration.ConfigurationError{Message: "Error message", Cause: errorCause}
+	noCauseConfigurationError    = eliteConfiguration.ConfigurationError{Message: "Error message"}
+	zeroValueConfigurationError  = eliteConfiguration.ConfigurationError{}
 	validConfigurationFile       = testsPath + "validConfiguration.json"
 	invalidConfigurationFile     = testsPath + "invalidConfiguration"
 	emptyConfigurationFile       = testsPath + "emptyConfiguration.json"
@@ -30,6 +36,43 @@ Print the tested Library's version
 */
 func TestVersion(t *testing.T) {
 	eliteConfiguration.PrintVersion()
+}
+
+/*
+Try to Read Error() on zero value ConfigurationError
+*/
+func TestErrorOnZeroValueConfigurationError(t *testing.T) {
+	zeroValueConfigurationError.Error()
+}
+
+/*
+Try to Read error Message with full filled ConfigurationError
+*/
+func TestErrorMessageWithConfigurationErrorFullFilled(t *testing.T) {
+
+	if msgError := fullFilledConfigurationError.Error(); !strings.Contains(msgError, "Error message") {
+		t.Errorf("ConfigurationError.Error() return should contains \"Error message\"")
+	}
+}
+
+/*
+Try to Read error Cause with full filled ConfigurationError
+*/
+func TestErrorCauseWithConfigurationErrorFullFilled(t *testing.T) {
+
+	if msgError := fullFilledConfigurationError.Error(); !strings.Contains(msgError, errorCause.Error()) {
+		t.Errorf("ConfigurationError.Error() should return message error with Cause")
+	}
+}
+
+/*
+Try to Read error Cause with ConfigurationError without cause
+*/
+func TestErrorCauseWithNoCauseConfigurationError(t *testing.T) {
+
+	if msgError := noCauseConfigurationError.Error(); strings.Contains(msgError, errorCause.Error()) {
+		t.Errorf("ConfigurationError.Error() should return message error without Cause")
+	}
 }
 
 /*
@@ -150,4 +193,29 @@ func TestConfigurationSaveWithExistentPath(t *testing.T) {
 
 	// Clean files added
 	os.Remove(testsPath + "save.json")
+}
+
+/*
+Try to get the Property's Value of an existing Name
+*/
+func TestConfigurationGetValueWithExistingPropertyName(t *testing.T) {
+
+	value, err := validConfiguration.GetValue("Key1")
+	if err != nil {
+		t.Errorf("Configuration.GetValue(\"Key1\") shouldn't return error")
+	}
+
+	if value != "Value1" {
+		t.Errorf("Configuration.GetValue(\"Key1\") should be \"Value1\"")
+	}
+}
+
+/*
+Try to get the Property's Value of a non-existing Name
+*/
+func TestConfigurationGetValueWithNonExistingPropertyName(t *testing.T) {
+
+	if _, err := validConfiguration.GetValue("Key4"); err == nil {
+		t.Errorf("Configuration.GetValue(\"Key4\") should return error")
+	}
 }

@@ -8,6 +8,7 @@ package eliteConfiguration
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -41,20 +42,26 @@ ConfigurationError report errors thrown by system with a personalised message
 */
 type ConfigurationError struct {
 	Message string
-	Err     error
+	Cause   error
 }
 
 /*
 Error get the ConfigurationError's complete message
 */
 func (e ConfigurationError) Error() string {
-	return fmt.Sprintf("[EliteConfiguration - %v] Can't Load %v\nCause : %v", Version(), e.Message, e.Err.Error())
+
+	causeError := ""
+	if e.Cause != nil {
+		causeError = fmt.Sprintf("\nCause : %v", e.Cause.Error())
+	}
+	return fmt.Sprintf("[EliteConfiguration - %v] %v%v", Version(), e.Message, causeError)
 }
 
 /*
 AddProperty add a Property to the Configuration
 */
 func (configuration *Configuration) AddProperty(key string, value interface{}) *Configuration {
+
 	configuration.initializeProperties().Properties[key] = Property{Name: key, Value: value}
 	return configuration
 }
@@ -63,6 +70,7 @@ func (configuration *Configuration) AddProperty(key string, value interface{}) *
 initializeProperties init the map Configuration's Properties's map if needed
 */
 func (configuration *Configuration) initializeProperties() *Configuration {
+
 	if configuration.Properties == nil {
 		configuration.Properties = make(map[string]Property)
 	}
@@ -76,9 +84,8 @@ func (configuration Configuration) toJSON() (jsonContent []byte, messageError er
 
 	jsonContent, err := json.Marshal(configuration)
 	if err != nil {
-		messageError = ConfigurationError{Message: "Configuration.toJSON()", Err: err}
+		messageError = ConfigurationError{Message: "Configuration.toJSON()", Cause: err}
 	}
-
 	return
 }
 
@@ -95,16 +102,29 @@ func (configuration Configuration) Save(fileName string) (messageError error) {
 		// Indent JSON content for better readability
 		var jsonIndentedContent bytes.Buffer
 		if err := json.Indent(&jsonIndentedContent, jsonContent, "", "\t"); err != nil {
-			messageError = ConfigurationError{Message: "json.Indent()", Err: err}
+			messageError = ConfigurationError{Message: "json.Indent()", Cause: err}
 		}
 
 		// Write JSON content to fileName
 		if err := ioutil.WriteFile(fileName, jsonIndentedContent.Bytes(), 0600); err != nil {
-			messageError = ConfigurationError{Message: "ioutil.WriteFile(" + fileName + ")", Err: err}
+			messageError = ConfigurationError{Message: "ioutil.WriteFile(" + fileName + ")", Cause: err}
 		}
 	}
 
 	return
+}
+
+/*
+GetValue return the Value of a Property with specified name. If name doesn't exist an error is returned.
+*/
+func (configuration Configuration) GetValue(name string) (interface{}, error) {
+
+	// Access to Property by its Name
+	if value, exist := configuration.Properties[name]; !exist {
+		return nil, ConfigurationError{Message: "Configuration.GetValue(\"" + name + "\")", Cause: errors.New("key not found")}
+	} else {
+		return value.Value, nil
+	}
 }
 
 /*
@@ -114,9 +134,8 @@ func newFromJSON(jsonContent []byte) (configuration Configuration, messageError 
 
 	// Deserialize JSON content into Configuration struct
 	if err := json.Unmarshal(jsonContent, &configuration); err != nil {
-		messageError = ConfigurationError{Message: "eliteConfiguration.newFromJSON()", Err: err}
+		messageError = ConfigurationError{Message: "eliteConfiguration.newFromJSON()", Cause: err}
 	}
-
 	return
 }
 
@@ -128,7 +147,7 @@ func Load(fileName string) (configuration Configuration, messageError error) {
 	// Read fileName
 	jsonContent, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		messageError = ConfigurationError{Message: "ioutil.ReadFile(" + fileName + ")", Err: err}
+		messageError = ConfigurationError{Message: "ioutil.ReadFile(" + fileName + ")", Cause: err}
 		return
 	}
 
@@ -139,9 +158,3 @@ func Load(fileName string) (configuration Configuration, messageError error) {
 
 	return
 }
-
-// TODO: use Alias "config" for package eliteConfiguration in tests
-
-// TODO: add method GetValue(key string) Interface{} to get the Value of a Property
-
-// TODO: change API into fully immutable API (ChangeName, SetProperty, GetProperty, GetValue)
