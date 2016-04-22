@@ -3,7 +3,7 @@ package eliteConfiguration_test
 import (
 	"bytes"
 	"errors"
-	"github.com/EliteSystems/eliteConfiguration"
+	conf "github.com/EliteSystems/eliteConfiguration"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,55 +13,48 @@ import (
 
 var (
 	testsPath                    = filepath.FromSlash("./resources/tests/")
+	errorMessage                 = "Message error"
 	errorCause                   = errors.New("Cause error")
-	fullFilledConfigurationError = eliteConfiguration.ConfigurationError{Message: "Error message", Cause: errorCause}
-	noCauseConfigurationError    = eliteConfiguration.ConfigurationError{Message: "Error message"}
-	zeroValueConfigurationError  = eliteConfiguration.ConfigurationError{}
+	nonExistingConfigurationFile = testsPath + "notExistConfiguration.json"
 	validConfigurationFile       = testsPath + "validConfiguration.json"
 	invalidConfigurationFile     = testsPath + "invalidConfiguration"
 	emptyConfigurationFile       = testsPath + "emptyConfiguration.json"
-	nonExistingConfigurationFile = testsPath + "notExistConfiguration.json"
 	nonExistingPath              = testsPath + filepath.FromSlash("not/existing/path/")
-	zeroValueConfiguration       = eliteConfiguration.Configuration{}
-	zeroValueProperty            = eliteConfiguration.Property{}
-	validConfiguration           = eliteConfiguration.Configuration{Name: "validConfiguration",
-		Properties: map[string]eliteConfiguration.Property{
-			"Key1": eliteConfiguration.Property{Name: "Key1", Value: "Value1"},
-			"Key2": eliteConfiguration.Property{Name: "Key2", Value: "Value2"},
-			"Key3": eliteConfiguration.Property{Name: "Key3", Value: "Value3"}}}
+	zeroValueConfiguration       = conf.New("")
+	validImmutableConfiguration  = conf.New("validConfiguration").AddValue("Key1", "Value1").AddValue("Key2", "Value2").AddValue("Key3", "Value3")
 )
+
+/*
+ReturnValue access to a return value by his position
+*/
+func returnValue(values ...interface{}) []interface{} {
+	return values
+}
 
 /*
 Print the tested Library's version
 */
 func TestVersion(t *testing.T) {
-	eliteConfiguration.PrintVersion()
+	conf.PrintVersion()
 }
 
 /*
-Try to Read Error() on zero value ConfigurationError
+Try to Read error message with full filled configuration error
 */
-func TestErrorOnZeroValueConfigurationError(t *testing.T) {
-	zeroValueConfigurationError.Error()
-}
+func TestErrorMessageWithFullFilledConfigurationError(t *testing.T) {
 
-/*
-Try to Read error Message with full filled ConfigurationError
-*/
-func TestErrorMessageWithConfigurationErrorFullFilled(t *testing.T) {
-
-	if msgError := fullFilledConfigurationError.Error(); !strings.Contains(msgError, "Error message") {
-		t.Errorf("ConfigurationError.Error() return should contains \"Error message\"")
+	if msgError := conf.NewError(errorMessage, errorCause).Error(); !strings.Contains(msgError, errorMessage) {
+		t.Errorf("configurationError.Error() return should contains %v", errorMessage)
 	}
 }
 
 /*
-Try to Read error Cause with full filled ConfigurationError
+Try to Read error cause with full filled configuration error
 */
-func TestErrorCauseWithConfigurationErrorFullFilled(t *testing.T) {
+func TestErrorCauseWithFullFilledConfigurationError(t *testing.T) {
 
-	if msgError := fullFilledConfigurationError.Error(); !strings.Contains(msgError, errorCause.Error()) {
-		t.Errorf("ConfigurationError.Error() should return message error with Cause")
+	if msgError := conf.NewError(errorMessage, errorCause).Error(); !strings.Contains(msgError, errorCause.Error()) {
+		t.Errorf("configurationError.Error() should return message error with Cause")
 	}
 }
 
@@ -70,7 +63,7 @@ Try to Read error Cause with ConfigurationError without cause
 */
 func TestErrorCauseWithNoCauseConfigurationError(t *testing.T) {
 
-	if msgError := noCauseConfigurationError.Error(); strings.Contains(msgError, errorCause.Error()) {
+	if msgError := conf.NewError(errorMessage, nil).Error(); strings.Contains(msgError, errorCause.Error()) {
 		t.Errorf("ConfigurationError.Error() should return message error without Cause")
 	}
 }
@@ -80,28 +73,16 @@ Try to Load a Configuration from valid JSON file
 */
 func TestLoadValidConfiguration(t *testing.T) {
 
-	switch configuration, err := eliteConfiguration.Load(validConfigurationFile); true {
+	switch configuration, err := conf.Load(validConfigurationFile); true {
 
 	case err != nil:
 		t.Errorf(err.Error())
 
-	case configuration.Name != "validConfiguration":
-		t.Errorf("Configuration.Name should be \"validConfiguration\"")
+	case configuration.Name() != "validConfiguration":
+		t.Errorf("Configuration.Name should be \"validConfiguration\", not \"%v\"", configuration.Name())
 
-	case len(configuration.Properties) != 4:
-		t.Errorf("Configuration should have 4 Properties")
-
-	case configuration.Properties["Key1"].Name != "Key1":
-		t.Errorf("Configuration.Properties[\"Key1\"].Name should be \"Key1\"")
-
-	case configuration.Properties["Key1"].Value != "Value1":
-		t.Errorf("Configuration.Properties[\"Key1\"].Value should be \"Value1\"")
-
-	case configuration.Properties[eliteConfiguration.RootPathKey] == zeroValueProperty:
-		t.Errorf("Configuration.Properties[\"%v\"] should exist", eliteConfiguration.RootPathKey)
-
-	case configuration.Properties["inexistingKey"] != zeroValueProperty:
-		t.Errorf("Configuration.Properties[\"inexistingKey\"] should not exist")
+	case configuration.Size() != 4:
+		t.Errorf("Configuration's size should be 4 not %v", configuration.Size())
 	}
 }
 
@@ -110,7 +91,7 @@ Try to Load a Configuration from valid JSON file
 */
 func TestLoadInvalidConfiguration(t *testing.T) {
 
-	if _, err := eliteConfiguration.Load(invalidConfigurationFile); err == nil {
+	if _, err := conf.Load(invalidConfigurationFile); err == nil {
 		t.Errorf("Load invalid Configuration should has return an error")
 	}
 }
@@ -120,33 +101,52 @@ Try to Load a Configuration from valid JSON file
 */
 func TestLoadEmptyConfiguration(t *testing.T) {
 
-	switch configuration, _ := eliteConfiguration.Load(emptyConfigurationFile); true {
+	switch configuration, _ := conf.Load(emptyConfigurationFile); true {
 
-	case len(configuration.Properties) == 0:
+	case configuration.Size() == 0:
 		t.Errorf("EmptyConfiguration should contains the rootPath Property")
 	}
 }
 
 /*
-Try to Load a Configuration from non-existent file
+Try to Load a Configuration from non existing file
 */
-func TestLoadNonExistentConfiguration(t *testing.T) {
+func TestLoadNonExistingConfiguration(t *testing.T) {
 
-	if _, err := eliteConfiguration.Load(nonExistingConfigurationFile); err == nil {
-		t.Errorf("Non existent file should has return an error")
+	if _, err := conf.Load(nonExistingConfigurationFile); err == nil {
+		t.Errorf("Non existing file should has return an error")
 	}
 }
 
 /*
-Try to Add a Property to an empty Configuration
+Try to Add a Value to an empty Configuration
 */
-func TestConfigurationAddProperty(t *testing.T) {
+func TestConfigurationAddValue(t *testing.T) {
 
-	switch configuration := zeroValueConfiguration.AddProperty("KeyAdded", "ValueAdded"); true {
-	case configuration.Properties["KeyAdded"] == zeroValueProperty:
-		t.Errorf("Property [\"KeyAdded\"] should exist")
-	case configuration.Properties["KeyAdded"].Value != "ValueAdded":
-		t.Errorf("Value should be \"ValueAdded\" for Property \"KeyAdded\"")
+	configuration := zeroValueConfiguration.AddValue("KeyAdded", "ValueAdded")
+	if value, err := configuration.Value("KeyAdded"); err != nil {
+		t.Errorf("Value(\"KeyAdded\") should be \"ValueAdded\" not %v - %v", value, err)
+	}
+}
+
+/*
+Try to change the Name of a configuration
+*/
+func TestNameImmutability(t *testing.T) {
+
+	if configuration := validImmutableConfiguration.SetName("NewName"); configuration.Name() == validImmutableConfiguration.Name() {
+		t.Errorf("configuration's name is not immutable")
+	}
+}
+
+/*
+Try to change a Value of Configuration
+*/
+func TestValueImmutability(t *testing.T) {
+
+	configuration := validImmutableConfiguration.AddValue("Key1", "NewValue")
+	if returnValue(configuration.Value("Key1"))[0] == returnValue(validImmutableConfiguration.Value("Key1"))[0] {
+		t.Errorf("configuration's value is not immutable")
 	}
 }
 
@@ -155,19 +155,19 @@ Try to Save a Configuration with passing no file in argument
 */
 func TestConfigurationSaveWithNoFile(t *testing.T) {
 
-	if err := validConfiguration.Save(""); err == nil {
-		t.Errorf("Configuration.Save() should return an error when passing no file")
+	if err := conf.Save(validImmutableConfiguration, ""); err == nil {
+		t.Errorf("Save() should return an error when passing no file")
 	}
 }
 
 /*
-Try to Save a Configuration in an non existent path
+Try to Save a Configuration in an non existing path
 */
-func TestConfigurationSaveWithNonExistentPath(t *testing.T) {
+func TestConfigurationSaveWithNonExistingPath(t *testing.T) {
 
 	if _, err := os.Stat(nonExistingPath); os.IsNotExist(err) {
-		if err := validConfiguration.Save(nonExistingPath + "file.json"); err == nil {
-			t.Errorf("Configuration.Save() should return error for non existing directory")
+		if err := conf.Save(validImmutableConfiguration, nonExistingPath+"file.json"); err == nil {
+			t.Errorf("Save() should return error for non existing directory")
 		}
 	} else {
 		t.Errorf("Test can't be performed, the path %v should not exist", nonExistingPath)
@@ -175,19 +175,19 @@ func TestConfigurationSaveWithNonExistentPath(t *testing.T) {
 }
 
 /*
-Try to Save a Configuration in an existent path and Compare result file with valid
+Try to Save a Configuration in an existing path and Compare result file with valid
 */
-func TestConfigurationSaveWithExistentPath(t *testing.T) {
+func TestConfigurationSaveWithExistingPath(t *testing.T) {
 
 	// Verify that Save() don't throw any error
-	if err := validConfiguration.Save(testsPath + "save.json"); err != nil {
-		t.Errorf("Configuration.Save() should not return an error")
+	if err := conf.Save(validImmutableConfiguration, testsPath+"save.json"); err != nil {
+		t.Errorf("Save() should not return an error")
 	}
 
 	// Compare the saved file content with the validConfigurationFile content
 	if jsonContent, err := ioutil.ReadFile(testsPath + "save.json"); err == nil {
 		if compareContent, _ := ioutil.ReadFile(validConfigurationFile); err == nil && bytes.Compare(jsonContent, compareContent) == 0 {
-			t.Errorf("Configuration.Save() the JSON content saved is not equal to validConfiguration.json file")
+			t.Errorf("Save(): the JSON content saved is not equal to validConfiguration.json file")
 		}
 	}
 
@@ -198,24 +198,24 @@ func TestConfigurationSaveWithExistentPath(t *testing.T) {
 /*
 Try to get the Property's Value of an existing Name
 */
-func TestConfigurationGetValueWithExistingPropertyName(t *testing.T) {
+func TestConfigurationValueWithExistingPropertyName(t *testing.T) {
 
-	value, err := validConfiguration.GetValue("Key1")
+	value, err := validImmutableConfiguration.Value("Key1")
 	if err != nil {
-		t.Errorf("Configuration.GetValue(\"Key1\") shouldn't return error")
+		t.Errorf("Configuration.Value(\"Key1\") shouldn't return error")
 	}
 
 	if value != "Value1" {
-		t.Errorf("Configuration.GetValue(\"Key1\") should be \"Value1\"")
+		t.Errorf("Configuration.Value(\"Key1\") should be \"Value1\"")
 	}
 }
 
 /*
 Try to get the Property's Value of a non-existing Name
 */
-func TestConfigurationGetValueWithNonExistingPropertyName(t *testing.T) {
+func TestConfigurationValueWithNonExistingPropertyName(t *testing.T) {
 
-	if _, err := validConfiguration.GetValue("Key4"); err == nil {
-		t.Errorf("Configuration.GetValue(\"Key4\") should return error")
+	if _, err := validImmutableConfiguration.Value("Key4"); err == nil {
+		t.Errorf("Configuration.Value(\"Key4\") should return error")
 	}
 }

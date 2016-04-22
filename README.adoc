@@ -12,6 +12,7 @@ v0.1, April 2016: First documentation's review
 //:pdf-page-size: A4
 
 *eliteConfiguration* lets you load/save _GoLang_ *Configurations* _structs_ from/to JSON's files, and manipulate them.
+The Configurations used are totally immutable.
 
 == How to install
 [source, bash]
@@ -31,7 +32,7 @@ import config "github.com/EliteSystems/eliteConfiguration"
 // Load Configuration from file "./conf.json"
 if configuration, err := config.Load("./conf.json"); err == nil {
         // Access to RootPath Property (Always exists after Loading Configuration from file)
-        rootPath string := configuration.Properties[config.RootPathKey].Value
+        rootPath string := configuration.Value(config.RootPathKey)
 }
 ----
 
@@ -42,14 +43,25 @@ if configuration, err := config.Load("./conf.json"); err == nil {
 package main
 import config "github.com/EliteSystems/eliteConfiguration"
 ...
-// Create Configuration
-configuration := config.Configuration{}
+// Create a new Configuration
+configuration := config.New("Configuration")
 ...
 // save Configuration to file "./conf.json"
-err := configuration.Save("./conf.json")
+err := conf.Save(configuration, "./conf.json")
 ----
 
 == Releases notes
+
+=== 0.2
+
+* API now manipulates totally immutable Configurations by default.
+* API now provide a function "Load(fileName string) (Configuration, error)" to Load a JSON configuration file with a Property "RootPathKey" in all cases.
+* API now provide a function "Save(configuration Configuration, fileName string) error" to save a configuration into JSON file.
+* Configuration interface now provide a method "Name() string" to get the Configuration's Name.
+* Configuration interface now provide a method "SetName(requiredName string) Configuration" to set the Configuration's Name.
+* Configuration interface now provide a method "Value(name string) (interface{}, error)" to get the Configuration's Value with its Name.
+* Configuration interface now provide a method "AddValue(name string, value interface{}) Configuration" to add a Configuration's Value with its Name.
+* Configuration interface now provide a method "Size() int" to get the Configuration's Properties number.
 
 === 0.1
 
