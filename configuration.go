@@ -22,139 +22,200 @@ const (
 )
 
 /*
-Configuration is a struct with a Name and a set of Properties accessed by their Key
+Configuration is the main packages's interface used to manipulate configurations structs
+with a Name, a set of Values accessed by their Name and a Size
 */
-type Configuration struct {
+type Configuration interface {
+	Name() string
+	SetName(requiredName string) Configuration
+	Value(name string) (interface{}, error)
+	AddValue(name string, value interface{}) Configuration
+	Size() int
+}
+
+/*
+immutableConfiguration is an internal immutable Configuration struct
+*/
+type immutableConfiguration struct {
+	name       string
+	properties map[string]property
+}
+
+/*
+mutableConfiguration is an internal mutable Configuration struct
+*/
+type mutableConfiguration struct {
 	Name       string
-	Properties map[string]Property
+	Properties map[string]property
 }
 
 /*
-Property is a struct with a Name and a Value
+property is an internal struct with a name and an associated value
 */
-type Property struct {
-	Name  string
-	Value interface{}
+type property struct {
+	name  string
+	value interface{}
 }
 
 /*
-ConfigurationError report errors thrown by system with a personalised message
+configurationError reports errors thrown when using eliteConfiguration package
 */
-type ConfigurationError struct {
-	Message string
-	Cause   error
+type configurationError struct {
+	message string
+	cause   error
 }
 
 /*
-Error get the ConfigurationError's complete message
+Error get the configurationError's complete message
 */
-func (e ConfigurationError) Error() string {
+func (e configurationError) Error() string {
 
 	causeError := ""
-	if e.Cause != nil {
-		causeError = fmt.Sprintf("\nCause : %v", e.Cause.Error())
+	if e.cause != nil {
+		causeError = fmt.Sprintf("\nCause : %v", e.cause.Error())
 	}
-	return fmt.Sprintf("[EliteConfiguration - %v] %v%v", Version(), e.Message, causeError)
+	return fmt.Sprintf("[EliteConfiguration - %v] %v%v", Version(), e.message, causeError)
 }
 
 /*
-AddProperty add a Property to the Configuration
+Name get the configuration's Name
 */
-func (configuration *Configuration) AddProperty(key string, value interface{}) *Configuration {
+func (configuration immutableConfiguration) Name() string {
+	return configuration.name
+}
 
-	configuration.initializeProperties().Properties[key] = Property{Name: key, Value: value}
+/*
+SetName set the name of the new configuration returned
+*/
+func (configuration immutableConfiguration) SetName(requiredName string) Configuration {
+
+	configuration.name = requiredName
 	return configuration
 }
 
 /*
-initializeProperties init the map Configuration's Properties's map if needed
+Value return the Value of a specified named Property. If Property doesn't exist an error is returned.
 */
-func (configuration *Configuration) initializeProperties() *Configuration {
+func (configuration immutableConfiguration) Value(name string) (interface{}, error) {
 
-	if configuration.Properties == nil {
-		configuration.Properties = make(map[string]Property)
+	// Access to Property by its Name
+	if property, exist := configuration.properties[name]; !exist {
+		return nil, NewError("Configuration.GetValue(\""+name+"\")", errors.New("Key not found"))
+	} else {
+		return property.value, nil
 	}
+}
+
+/*
+AddProperty add a Property to the new Configuration returned
+*/
+func (configuration immutableConfiguration) AddValue(requiredName string, optionalValue interface{}) Configuration {
+
+	// Initialize a map copy and add it the new Property
+	mapCopy := make(map[string]property)
+	if configuration.properties != nil {
+		for key, value := range configuration.properties {
+			mapCopy[key] = value
+		}
+	}
+	mapCopy[requiredName] = property{name: requiredName, value: optionalValue}
+
+	// Change the map of configuration with the copy
+	configuration.properties = mapCopy
+
 	return configuration
 }
 
 /*
-toJSON return JSON's content from the Configuration
+Size return the size of the configuration (Number of properties)
 */
-func (configuration Configuration) toJSON() (jsonContent []byte, messageError error) {
+func (configuration immutableConfiguration) Size() int {
+	return len(configuration.properties)
+}
 
-	jsonContent, err := json.Marshal(configuration)
-	if err != nil {
-		messageError = ConfigurationError{Message: "Configuration.toJSON()", Cause: err}
+/*
+New return a new immutable Configuration with the required Name
+*/
+func New(requiredName string) Configuration {
+
+	configuration := immutableConfiguration{name: requiredName}
+	return configuration
+}
+
+/*
+newFromJSON return a new mutableConfiguration from the jsonContent
+*/
+func newFromJSON(jsonContent []byte) (configuration mutableConfiguration, messageError error) {
+
+	// Deserialize JSON content into Configuration struct
+	if err := json.Unmarshal(jsonContent, &configuration); err != nil {
+		messageError = NewError("eliteConfiguration.newFromJSON()", err)
 	}
 	return
 }
 
 /*
-Save the Configuration to fileName in indented JSON format
+Load fileName with valid JSON Content into a returned immutable Configuration
 */
-func (configuration Configuration) Save(fileName string) (messageError error) {
+func Load(fileName string) (Configuration, error) {
+
+	// Read fileName
+	jsonContent, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return nil, NewError("ioutil.ReadFile("+fileName+")", err)
+	}
+
+	// Add/Replace RootPath to configuration
+	configuration, messageError := newFromJSON(jsonContent)
+	if messageError == nil {
+		configuration.Properties[RootPathKey] = property{name: RootPathKey, value: path.Dir(fileName)}
+	}
+
+	return immutableConfiguration{name: configuration.Name, properties: configuration.Properties}, messageError
+}
+
+/*
+Save a Configuration to fileName in indented JSON format
+*/
+func Save(configuration Configuration, fileName string) error {
 
 	// Serialize Configuration struct to JSON
-	jsonContent, messageError := configuration.toJSON()
+	jsonContent, messageError := toJSON(configuration)
 
 	if messageError == nil {
 
 		// Indent JSON content for better readability
 		var jsonIndentedContent bytes.Buffer
 		if err := json.Indent(&jsonIndentedContent, jsonContent, "", "\t"); err != nil {
-			messageError = ConfigurationError{Message: "json.Indent()", Cause: err}
+			messageError = NewError("json.Indent()", err)
 		}
 
 		// Write JSON content to fileName
 		if err := ioutil.WriteFile(fileName, jsonIndentedContent.Bytes(), 0600); err != nil {
-			messageError = ConfigurationError{Message: "ioutil.WriteFile(" + fileName + ")", Cause: err}
+			messageError = NewError("ioutil.WriteFile("+fileName+")", err)
 		}
 	}
 
-	return
+	return messageError
 }
 
 /*
-GetValue return the Value of a Property with specified name. If name doesn't exist an error is returned.
+toJSON return JSON's content from the Configuration
 */
-func (configuration Configuration) GetValue(name string) (interface{}, error) {
+func toJSON(configuration Configuration) ([]byte, error) {
 
-	// Access to Property by its Name
-	if value, exist := configuration.Properties[name]; !exist {
-		return nil, ConfigurationError{Message: "Configuration.GetValue(\"" + name + "\")", Cause: errors.New("key not found")}
-	} else {
-		return value.Value, nil
-	}
-}
-
-/*
-newFromJSON return a new Configuration from the jsonContent
-*/
-func newFromJSON(jsonContent []byte) (configuration Configuration, messageError error) {
-
-	// Deserialize JSON content into Configuration struct
-	if err := json.Unmarshal(jsonContent, &configuration); err != nil {
-		messageError = ConfigurationError{Message: "eliteConfiguration.newFromJSON()", Cause: err}
-	}
-	return
-}
-
-/*
-Load fileName with valid JSON Content into a returned Configuration
-*/
-func Load(fileName string) (configuration Configuration, messageError error) {
-
-	// Read fileName
-	jsonContent, err := ioutil.ReadFile(fileName)
+	var messageError error
+	jsonContent, err := json.Marshal(configuration)
 	if err != nil {
-		messageError = ConfigurationError{Message: "ioutil.ReadFile(" + fileName + ")", Cause: err}
-		return
+		messageError = NewError("Configuration.toJSON()", err)
 	}
+	return jsonContent, messageError
+}
 
-	// Add/Replace RootPath to configuration
-	if configuration, messageError = newFromJSON(jsonContent); messageError == nil {
-		configuration.Properties[RootPathKey] = Property{Name: RootPathKey, Value: path.Dir(fileName)}
-	}
+/*
+Error return a new configurationError with required message and optional cause
+*/
+func NewError(requiredMessage string, optionalCause error) error {
 
-	return
+	return configurationError{message: requiredMessage, cause: optionalCause}
 }
