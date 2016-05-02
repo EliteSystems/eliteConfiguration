@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	testsPath                    = filepath.FromSlash("./resources/tests/")
+	testsPath                    = filepath.FromSlash("./")
 	errorMessage                 = "Message error"
 	errorCause                   = errors.New("Cause error")
 	nonExistingConfigurationFile = testsPath + "notExistConfiguration.json"
