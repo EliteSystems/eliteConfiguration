@@ -60,7 +60,8 @@ err := conf.Save(configuration, "./conf.json")
 * Configuration interface now provide a method "Name() string" to get the Configuration's Name.
 * Configuration interface now provide a method "SetName(requiredName string) Configuration" to set the Configuration's Name.
 * Configuration interface now provide a method "Value(name string) (interface{}, error)" to get the Configuration's Value with its Name.
-* Configuration interface now provide a method "AddValue(name string, value interface{}) Configuration" to add a Configuration's Value with its Name.
+* Configuration interface now provide a method "Add(name string, value interface{}) Configuration" to add a Configuration's Value with its Name.
+* Configuration interface now provide a method "Remove(name string) Configuration" to remove a Configuration's Value with its Name.
 * Configuration interface now provide a method "Size() int" to get the Configuration's Properties number.
 
 === 0.1
