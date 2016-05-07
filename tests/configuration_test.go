@@ -21,7 +21,7 @@ var (
 	emptyConfigurationFile       = testsPath + "emptyConfiguration.json"
 	nonExistingPath              = testsPath + filepath.FromSlash("not/existing/path/")
 	zeroValueConfiguration       = conf.New("")
-	validImmutableConfiguration  = conf.New("validConfiguration").AddValue("Key1", "Value1").AddValue("Key2", "Value2").AddValue("Key3", "Value3")
+	validImmutableConfiguration  = conf.New("validConfiguration").Add("Key1", "Value1").Add("Key2", "Value2").Add("Key3", "Value3")
 )
 
 /*
@@ -123,9 +123,53 @@ Try to Add a Value to an empty Configuration
 */
 func TestConfigurationAddValue(t *testing.T) {
 
-	configuration := zeroValueConfiguration.AddValue("KeyAdded", "ValueAdded")
+	configuration := zeroValueConfiguration.Add("KeyAdded", "ValueAdded")
 	if value, err := configuration.Value("KeyAdded"); err != nil {
 		t.Errorf("Value(\"KeyAdded\") should be \"ValueAdded\" not %v - %v", value, err)
+	}
+}
+
+/*
+Try to add a Value to validImmutableConfiguration and check the immutability
+*/
+func TestConfigurationAddValueImmutability(t *testing.T) {
+
+	validImmutableConfiguration.Add("NewKey", "NewValue")
+	if _, err := validImmutableConfiguration.Value("NewKey"); err == nil {
+		t.Errorf("validImmutableConfiguration is not immutable when adding value")
+	}
+}
+
+/*
+Try to change a Value of validImmutableConfiguration and check the immutability
+*/
+func TestConfigurationChangeValueImmutability(t *testing.T) {
+
+	configuration := validImmutableConfiguration.Add("Key1", "NewValue")
+	if returnValue(configuration.Value("Key1"))[0] == returnValue(validImmutableConfiguration.Value("Key1"))[0] {
+		t.Errorf("validImmutableConfiguration is not immutable when changing value")
+	}
+}
+
+/*
+Try to Remove a Value to the validImmutableConfiguration
+*/
+func TestConfigurationRemoveValue(t *testing.T) {
+
+	configuration := validImmutableConfiguration.Remove("Key1")
+	if _, err := configuration.Value("Key1"); err == nil {
+		t.Errorf("Remove(\"Key1\") should has removed the \"Key1\" Property")
+	}
+}
+
+/*
+Try to remove a Value to the validImmutableConfiguration and check the immutability
+*/
+func TestConfigurationRemoveValueImmutability(t *testing.T) {
+
+	validImmutableConfiguration.Remove("Key1")
+	if _, err := validImmutableConfiguration.Value("Key1"); err != nil {
+		t.Errorf("validImmutableConfiguration is not immutable when removing value")
 	}
 }
 
@@ -136,17 +180,6 @@ func TestNameImmutability(t *testing.T) {
 
 	if configuration := validImmutableConfiguration.SetName("NewName"); configuration.Name() == validImmutableConfiguration.Name() {
 		t.Errorf("configuration's name is not immutable")
-	}
-}
-
-/*
-Try to change a Value of Configuration
-*/
-func TestValueImmutability(t *testing.T) {
-
-	configuration := validImmutableConfiguration.AddValue("Key1", "NewValue")
-	if returnValue(configuration.Value("Key1"))[0] == returnValue(validImmutableConfiguration.Value("Key1"))[0] {
-		t.Errorf("configuration's value is not immutable")
 	}
 }
 

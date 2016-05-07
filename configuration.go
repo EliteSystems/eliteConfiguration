@@ -29,7 +29,8 @@ type Configuration interface {
 	Name() string
 	SetName(requiredName string) Configuration
 	Value(name string) (interface{}, error)
-	AddValue(name string, value interface{}) Configuration
+	Add(name string, value interface{}) Configuration
+	Remove(name string) Configuration
 	Size() int
 }
 
@@ -107,9 +108,9 @@ func (configuration immutableConfiguration) Value(name string) (interface{}, err
 }
 
 /*
-AddProperty add a Property to the new Configuration returned
+Add a Property to the new Configuration returned
 */
-func (configuration immutableConfiguration) AddValue(requiredName string, optionalValue interface{}) Configuration {
+func (configuration immutableConfiguration) Add(requiredName string, optionalValue interface{}) Configuration {
 
 	// Initialize a map copy and add it the new Property
 	mapCopy := make(map[string]property)
@@ -119,6 +120,26 @@ func (configuration immutableConfiguration) AddValue(requiredName string, option
 		}
 	}
 	mapCopy[requiredName] = property{name: requiredName, value: optionalValue}
+
+	// Change the map of configuration with the copy
+	configuration.properties = mapCopy
+
+	return configuration
+}
+
+/*
+Remove a property to the new Configuration returned
+*/
+func (configuration immutableConfiguration) Remove(requiredName string) Configuration {
+	// Initialize a map copy and add it the new Property
+	mapCopy := make(map[string]property)
+	if configuration.properties != nil {
+		for key, value := range configuration.properties {
+			if requiredName != key {
+				mapCopy[key] = value
+			}
+		}
+	}
 
 	// Change the map of configuration with the copy
 	configuration.properties = mapCopy
@@ -213,7 +234,7 @@ func toJSON(configuration Configuration) ([]byte, error) {
 }
 
 /*
-Error return a new configurationError with required message and optional cause
+NewError return a new configurationError with required message and optional cause
 */
 func NewError(requiredMessage string, optionalCause error) error {
 
