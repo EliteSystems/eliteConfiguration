@@ -2,19 +2,16 @@ package eliteConfiguration_test
 
 import (
 	"bytes"
-	"errors"
+	"fmt"
 	conf "github.com/EliteSystems/eliteConfiguration"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 )
 
 var (
 	testsPath                    = filepath.FromSlash("./")
-	errorMessage                 = "Message error"
-	errorCause                   = errors.New("Cause error")
 	nonExistingConfigurationFile = testsPath + "notExistConfiguration.json"
 	validConfigurationFile       = testsPath + "validConfiguration.json"
 	invalidConfigurationFile     = testsPath + "invalidConfiguration"
@@ -35,37 +32,7 @@ func returnValue(values ...interface{}) []interface{} {
 Print the tested Library's version
 */
 func TestVersion(t *testing.T) {
-	conf.PrintVersion()
-}
-
-/*
-Try to Read error message with full filled configuration error
-*/
-func TestErrorMessageWithFullFilledConfigurationError(t *testing.T) {
-
-	if msgError := conf.NewError(errorMessage, errorCause).Error(); !strings.Contains(msgError, errorMessage) {
-		t.Errorf("configurationError.Error() return should contains %v", errorMessage)
-	}
-}
-
-/*
-Try to Read error cause with full filled configuration error
-*/
-func TestErrorCauseWithFullFilledConfigurationError(t *testing.T) {
-
-	if msgError := conf.NewError(errorMessage, errorCause).Error(); !strings.Contains(msgError, errorCause.Error()) {
-		t.Errorf("configurationError.Error() should return message error with Cause")
-	}
-}
-
-/*
-Try to Read error Cause with ConfigurationError without cause
-*/
-func TestErrorCauseWithNoCauseConfigurationError(t *testing.T) {
-
-	if msgError := conf.NewError(errorMessage, nil).Error(); strings.Contains(msgError, errorCause.Error()) {
-		t.Errorf("ConfigurationError.Error() should return message error without Cause")
-	}
+	fmt.Println("EliteConfiguration [" + conf.Version() + "]")
 }
 
 /*
