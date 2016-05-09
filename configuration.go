@@ -101,7 +101,7 @@ func (configuration immutableConfiguration) Value(name string) (interface{}, err
 
 	// Access to Property by its Name
 	if property, exist := configuration.properties[name]; !exist {
-		return nil, NewError("Configuration.GetValue(\""+name+"\")", errors.New("Key not found"))
+		return nil, newError("Configuration.GetValue(\""+name+"\")", errors.New("Key not found"))
 	} else {
 		return property.value, nil
 	}
@@ -170,7 +170,7 @@ func newFromJSON(jsonContent []byte) (configuration mutableConfiguration, messag
 
 	// Deserialize JSON content into Configuration struct
 	if err := json.Unmarshal(jsonContent, &configuration); err != nil {
-		messageError = NewError("eliteConfiguration.newFromJSON()", err)
+		messageError = newError("eliteConfiguration.newFromJSON()", err)
 	}
 	return
 }
@@ -183,7 +183,7 @@ func Load(fileName string) (Configuration, error) {
 	// Read fileName
 	jsonContent, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		return nil, NewError("ioutil.ReadFile("+fileName+")", err)
+		return nil, newError("ioutil.ReadFile("+fileName+")", err)
 	}
 
 	// Add/Replace RootPath to configuration
@@ -208,12 +208,12 @@ func Save(configuration Configuration, fileName string) error {
 		// Indent JSON content for better readability
 		var jsonIndentedContent bytes.Buffer
 		if err := json.Indent(&jsonIndentedContent, jsonContent, "", "\t"); err != nil {
-			messageError = NewError("json.Indent()", err)
+			messageError = newError("json.Indent()", err)
 		}
 
 		// Write JSON content to fileName
 		if err := ioutil.WriteFile(fileName, jsonIndentedContent.Bytes(), 0600); err != nil {
-			messageError = NewError("ioutil.WriteFile("+fileName+")", err)
+			messageError = newError("ioutil.WriteFile("+fileName+")", err)
 		}
 	}
 
@@ -228,7 +228,7 @@ func toJSON(configuration Configuration) ([]byte, error) {
 	var messageError error
 	jsonContent, err := json.Marshal(configuration)
 	if err != nil {
-		messageError = NewError("Configuration.toJSON()", err)
+		messageError = newError("Configuration.toJSON()", err)
 	}
 	return jsonContent, messageError
 }
@@ -236,7 +236,7 @@ func toJSON(configuration Configuration) ([]byte, error) {
 /*
 NewError return a new configurationError with required message and optional cause
 */
-func NewError(requiredMessage string, optionalCause error) error {
+func newError(requiredMessage string, optionalCause error) error {
 
 	return configurationError{message: requiredMessage, cause: optionalCause}
 }

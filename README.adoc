@@ -27,24 +27,24 @@ $ go get github.com/EliteSystems/eliteConfiguration
 [source, go]
 ----
 package main
-import config "github.com/EliteSystems/eliteConfiguration"
+import conf "github.com/EliteSystems/eliteConfiguration"
 ...
 // Load Configuration from file "./conf.json"
-if configuration, err := config.Load("./conf.json"); err == nil {
+if configuration, err := conf.Load("./conf.json"); err == nil {
         // Access to RootPath Property (Always exists after Loading Configuration from file)
-        rootPath string := configuration.Value(config.RootPathKey)
+        rootPath string := configuration.Value(conf.RootPathKey)
 }
 ----
 
-=== Save Configuration to JSON file
+=== Create and Save Configuration to JSON file
 
 [source, go]
 ----
 package main
-import config "github.com/EliteSystems/eliteConfiguration"
+import conf "github.com/EliteSystems/eliteConfiguration"
 ...
 // Create a new Configuration
-configuration := config.New("Configuration")
+configuration := conf.New("Configuration")
 ...
 // save Configuration to file "./conf.json"
 err := conf.Save(configuration, "./conf.json")
