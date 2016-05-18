@@ -2,9 +2,9 @@ package eliteConfiguration
 
 const (
 	version = "0"
-	release = "1"
+	release = "2"
 	hotfix  = "0"
-	feature = "6"
+	feature = "0"
 )
 
 /**
