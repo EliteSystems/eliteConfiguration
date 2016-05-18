@@ -1,0 +1,79 @@
+@startuml
+
+' List entities with their notes -------------------------------------
+
+package errors <<Frame>> #E0EBF5 {
+
+    interface Error {
+        +Error() string
+    }
+
+}
+
+package eliteConfiguration <<Frame>> #DD {
+
+    note as packageMethods
+        +New(requiredName string) Configuration
+        +Load(fileName string) (Configuration, error)
+        +Save(configuration Configuration, fileName string) error
+        +Version() string
+    end note
+
+    interface Configuration {
+        +Name() string
+        +SetName(requiredName string) Configuration
+        +Value(name string) (interface{}, error)
+        +Add(name string, value interface{}) Configuration
+        +Remove(name string) Configuration
+        +Size() int
+    }
+
+    class mutableConfiguration {
+        +Name string
+        +Properties map[string]property
+    }
+
+    class immutableConfiguration {
+        -name string
+        -properties map[string]property
+    }
+    note right : used by Default
+
+    class property {
+        -name string
+        -value interface{}
+    }
+
+    class configurationError {
+        -message string
+        -cause error
+    }
+
+}
+
+
+' List relationships -------------------------------------------------
+
+eliteConfiguration +-- errors
+
+Configuration <|.. immutableConfiguration
+Error <|.. configurationError
+immutableConfiguration *-- "*" property : contains >
+mutableConfiguration *-- "*" property : contains >
+
+
+' Plant UML configuration --------------------------------------------
+
+title
+    EliteConfiguration Class Diagram
+endtitle
+
+legend center
+    EliteSystems&#169; 2016
+endlegend
+
+hide empty members
+hide empty fields
+hide empty methods
+
+@enduml

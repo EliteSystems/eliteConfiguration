@@ -1,0 +1,77 @@
+= eliteConfiguration image:go-documentation-blue.svg[GoDoc, link="http://godoc.org/github.com/EliteSystems/eliteConfiguration", role="external", window="_blank"]
+Cédric LARA-MARTIL <git@cedric.laramartil.fr>, Christophe MARTY <git@chrismarty.fr>
+v0.2, May 2016: Documentation's review
+:authorinitials: @cLaraMartil & @chrismarty34
+:doctype: article
+:source-highlighter: coderay
+:imagesdir: documentation/images
+:icons:
+:toc:
+//:numbered:
+//:source-highlighter: pigments
+//:pdf-page-size: A4
+
+*eliteConfiguration* lets you load/save _GoLang_ *Configurations* _structs_ from/to JSON's files, and manipulate them.
+The Configurations used are totally immutable.
+
+== How to install
+[source, bash]
+----
+$ go get github.com/EliteSystems/eliteConfiguration
+----
+
+== Examples
+
+=== Load Configuration from JSON file
+
+[source, go]
+----
+package main
+import conf "github.com/EliteSystems/eliteConfiguration"
+...
+// Load Configuration from file "./conf.json"
+if configuration, err := conf.Load("./conf.json"); err == nil {
+        // Access to RootPath Property (Always exists after Loading Configuration from file)
+        rootPath string := configuration.Value(conf.RootPathKey)
+}
+----
+
+=== Create and Save Configuration to JSON file
+
+[source, go]
+----
+package main
+import conf "github.com/EliteSystems/eliteConfiguration"
+...
+// Create a new Configuration
+configuration := conf.New("Configuration")
+...
+// save Configuration to file "./conf.json"
+err := conf.Save(configuration, "./conf.json")
+----
+
+== Releases notes
+
+=== 0.2
+
+* API now manipulates totally immutable Configurations by default.
+* API now provide a function "Load(fileName string) (Configuration, error)" to Load a JSON configuration file with a Property "RootPathKey" in all cases.
+* API now provide a function "Save(configuration Configuration, fileName string) error" to save a configuration into JSON file.
+* API now provide a function "New(requiredName string) Configuration" to create a new Configuration.
+* API now provide a function "Version() string" with the version of the API.
+* Configuration interface now provide a method "Name() string" to get the Configuration's Name.
+* Configuration interface now provide a method "SetName(requiredName string) Configuration" to set the Configuration's Name.
+* Configuration interface now provide a method "Value(name string) (interface{}, error)" to get the Configuration's Value with its Name.
+* Configuration interface now provide a method "Add(name string, value interface{}) Configuration" to add a Configuration's Value with its Name.
+* Configuration interface now provide a method "Remove(name string) Configuration" to remove a Configuration's Value with its Name.
+* Configuration interface now provide a method "Size() int" to get the Configuration's Properties number.
+
+=== 0.1
+
+* Adding function "Load(fileName string) (Configuration, error)" to Load a JSON configuration file with a Property "RootPathKey" in all cases.
+* Adding method &quot;Configuration.AddProperty(key string, value interface{}) *Configuration&quot; to add/replace a Configuration's Property.
+* Adding method "Configuration.Save(fileName string) error" to save Configuration into fileName (with indented JSON content).
+
+== Uml documentation
+
+image:classDiagram.png[Uml]
