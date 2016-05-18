@@ -56,8 +56,8 @@ package eliteConfiguration <<Frame>> #DD {
 
 eliteConfiguration +-- errors
 
-Configuration <|-- immutableConfiguration
-Error <|-- configurationError
+Configuration <|.. immutableConfiguration
+Error <|.. configurationError
 immutableConfiguration *-- "*" property : contains >
 mutableConfiguration *-- "*" property : contains >
 
