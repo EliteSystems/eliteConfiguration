@@ -32,30 +32,48 @@ type Configuration interface {
 	Add(name string, value interface{}) Configuration
 	Remove(name string) Configuration
 	Size() int
+	properties() map[string]Property
+}
+
+/*
+Property is the interface used to manipulate configurations 'properties'
+with access to their Name and Value
+*/
+type Property interface {
+	Name() string
+	Value() interface{}
 }
 
 /*
 immutableConfiguration is an internal immutable Configuration struct
 */
 type immutableConfiguration struct {
-	name       string
-	properties map[string]property
+	iName       string
+	iProperties map[string]Property
 }
 
 /*
-mutableConfiguration is an internal mutable Configuration struct
+marshallableConfiguration is an internal Configuration struct used to marshal/unMarshall unexposed Configuration
 */
-type mutableConfiguration struct {
-	Name       string
-	Properties map[string]property
+type marshallableConfiguration struct {
+	NameAttr       string                          `json:"name"`
+	PropertiesAttr map[string]marshallableProperty `json:"properties"`
 }
 
 /*
-property is an internal struct with a name and an associated value
+immutableProperty is an internal immutable Property struct
 */
-type property struct {
-	name  string
-	value interface{}
+type immutableProperty struct {
+	iName  string
+	iValue interface{}
+}
+
+/*
+marshallableProperty is an internal Property struct used to marshal/unMarshall unexposed Property
+*/
+type marshallableProperty struct {
+	NameAttr  string      `json:"name"`
+	ValueAttr interface{} `json:"value"`
 }
 
 /*
@@ -82,7 +100,7 @@ func (e configurationError) Error() string {
 Name get the configuration's Name
 */
 func (configuration immutableConfiguration) Name() string {
-	return configuration.name
+	return configuration.iName
 }
 
 /*
@@ -90,7 +108,7 @@ SetName set the name of the new configuration returned
 */
 func (configuration immutableConfiguration) SetName(requiredName string) Configuration {
 
-	configuration.name = requiredName
+	configuration.iName = requiredName
 	return configuration
 }
 
@@ -100,10 +118,10 @@ Value return the Value of a specified named Property. If Property doesn't exist 
 func (configuration immutableConfiguration) Value(name string) (interface{}, error) {
 
 	// Access to Property by its Name
-	if property, exist := configuration.properties[name]; !exist {
-		return nil, newError("Configuration.GetValue(\""+name+"\")", errors.New("Key not found"))
+	if property, exist := configuration.iProperties[name]; !exist {
+		return nil, newError("Configuration.Value(\""+name+"\")", errors.New("Key not found"))
 	} else {
-		return property.value, nil
+		return property.Value(), nil
 	}
 }
 
@@ -113,16 +131,16 @@ Add a Property to the new Configuration returned
 func (configuration immutableConfiguration) Add(requiredName string, optionalValue interface{}) Configuration {
 
 	// Initialize a map copy and add it the new Property
-	mapCopy := make(map[string]property)
-	if configuration.properties != nil {
-		for key, value := range configuration.properties {
+	mapCopy := make(map[string]Property)
+	if configuration.iProperties != nil {
+		for key, value := range configuration.iProperties {
 			mapCopy[key] = value
 		}
 	}
-	mapCopy[requiredName] = property{name: requiredName, value: optionalValue}
+	mapCopy[requiredName] = immutableProperty{iName: requiredName, iValue: optionalValue}
 
 	// Change the map of configuration with the copy
-	configuration.properties = mapCopy
+	configuration.iProperties = mapCopy
 
 	return configuration
 }
@@ -131,10 +149,11 @@ func (configuration immutableConfiguration) Add(requiredName string, optionalVal
 Remove a property to the new Configuration returned
 */
 func (configuration immutableConfiguration) Remove(requiredName string) Configuration {
+
 	// Initialize a map copy and add it the new Property
-	mapCopy := make(map[string]property)
-	if configuration.properties != nil {
-		for key, value := range configuration.properties {
+	mapCopy := make(map[string]Property)
+	if configuration.iProperties != nil {
+		for key, value := range configuration.iProperties {
 			if requiredName != key {
 				mapCopy[key] = value
 			}
@@ -142,7 +161,7 @@ func (configuration immutableConfiguration) Remove(requiredName string) Configur
 	}
 
 	// Change the map of configuration with the copy
-	configuration.properties = mapCopy
+	configuration.iProperties = mapCopy
 
 	return configuration
 }
@@ -151,7 +170,28 @@ func (configuration immutableConfiguration) Remove(requiredName string) Configur
 Size return the size of the configuration (Number of properties)
 */
 func (configuration immutableConfiguration) Size() int {
-	return len(configuration.properties)
+	return len(configuration.iProperties)
+}
+
+/*
+properties return the all the properties of the configuration
+*/
+func (configuration immutableConfiguration) properties() map[string]Property {
+	return configuration.iProperties
+}
+
+/*
+Name get the Property's immutable Name
+*/
+func (property immutableProperty) Name() string {
+	return property.iName
+}
+
+/*
+Value get the Property's immutable Value
+*/
+func (property immutableProperty) Value() interface{} {
+	return property.iValue
 }
 
 /*
@@ -159,14 +199,14 @@ New return a new immutable Configuration with the required Name
 */
 func New(requiredName string) Configuration {
 
-	configuration := immutableConfiguration{name: requiredName}
+	configuration := immutableConfiguration{iName: requiredName}
 	return configuration
 }
 
 /*
 newFromJSON return a new mutableConfiguration from the jsonContent
 */
-func newFromJSON(jsonContent []byte) (configuration mutableConfiguration, messageError error) {
+func newFromJSON(jsonContent []byte) (configuration marshallableConfiguration, messageError error) {
 
 	// Deserialize JSON content into Configuration struct
 	if err := json.Unmarshal(jsonContent, &configuration); err != nil {
@@ -186,13 +226,20 @@ func Load(fileName string) (Configuration, error) {
 		return nil, newError("ioutil.ReadFile("+fileName+")", err)
 	}
 
-	// Add/Replace RootPath to configuration
+	// Create new immutableConfiguration
 	configuration, messageError := newFromJSON(jsonContent)
 	if messageError == nil {
-		configuration.Properties[RootPathKey] = property{name: RootPathKey, value: path.Dir(fileName)}
+		var returnConfiguration Configuration = immutableConfiguration{iName: configuration.NameAttr}
+		if configuration.PropertiesAttr != nil {
+			for key, value := range configuration.PropertiesAttr {
+				returnConfiguration = returnConfiguration.Add(key, value)
+			}
+		}
+		// Add/Replace RootPath to configuration
+		return returnConfiguration.Add(RootPathKey, path.Dir(fileName)), nil
 	}
 
-	return immutableConfiguration{name: configuration.Name, properties: configuration.Properties}, messageError
+	return nil, messageError
 }
 
 /*
@@ -207,7 +254,7 @@ func Save(configuration Configuration, fileName string) error {
 
 		// Indent JSON content for better readability
 		var jsonIndentedContent bytes.Buffer
-		if err := json.Indent(&jsonIndentedContent, jsonContent, "", "\t"); err != nil {
+		if err := json.Indent(&jsonIndentedContent, jsonContent, "", "  "); err != nil {
 			messageError = newError("json.Indent()", err)
 		}
 
@@ -226,15 +273,27 @@ toJSON return JSON's content from the Configuration
 func toJSON(configuration Configuration) ([]byte, error) {
 
 	var messageError error
-	jsonContent, err := json.Marshal(configuration)
+	jsonContent, err := json.Marshal(toMutable(configuration))
 	if err != nil {
 		messageError = newError("Configuration.toJSON()", err)
 	}
 	return jsonContent, messageError
 }
 
+func toMutable(configuration Configuration) marshallableConfiguration {
+
+	returnConfiguration := marshallableConfiguration{NameAttr: configuration.Name(), PropertiesAttr: make(map[string]marshallableProperty)}
+	if configuration.properties() != nil {
+		for key, value := range configuration.properties() {
+			returnConfiguration.PropertiesAttr[key] = marshallableProperty{NameAttr: value.Name(), ValueAttr: value.Value()}
+		}
+	}
+
+	return returnConfiguration
+}
+
 /*
-NewError return a new configurationError with required message and optional cause
+newError return a new configurationError with required message and optional cause
 */
 func newError(requiredMessage string, optionalCause error) error {
 

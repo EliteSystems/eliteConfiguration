@@ -186,7 +186,7 @@ func TestConfigurationSaveWithExistingPath(t *testing.T) {
 
 	// Compare the saved file content with the validConfigurationFile content
 	if jsonContent, err := ioutil.ReadFile(testsPath + "save.json"); err == nil {
-		if compareContent, _ := ioutil.ReadFile(validConfigurationFile); err == nil && bytes.Compare(jsonContent, compareContent) == 0 {
+		if compareContent, _ := ioutil.ReadFile(validConfigurationFile); bytes.Compare(jsonContent, compareContent) != 0 {
 			t.Errorf("Save(): the JSON content saved is not equal to validConfiguration.json file")
 		}
 	}
