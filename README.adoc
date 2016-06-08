@@ -52,6 +52,10 @@ err := conf.Save(configuration, "./conf.json")
 
 == Releases notes
 
+=== 0.2.1
+
+* fix an important bug when saving Configuration to JSON file.
+
 === 0.2
 
 * API now manipulates totally immutable Configurations by default.

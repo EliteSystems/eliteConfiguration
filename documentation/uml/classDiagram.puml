@@ -4,7 +4,7 @@
 
 package errors <<Frame>> #E0EBF5 {
 
-    interface Error {
+    interface error {
         +Error() string
     }
 
@@ -26,27 +26,38 @@ package eliteConfiguration <<Frame>> #DD {
         +Add(name string, value interface{}) Configuration
         +Remove(name string) Configuration
         +Size() int
+        #properties() map[string]Property
     }
 
-    class mutableConfiguration {
-        +Name string
-        +Properties map[string]property
+    interface Property {
+        +Name() string
+        +Value() interface{}
+    }
+
+    class marshallableConfiguration {
+        +NameAttr string
+        +PropertiesAttr map[string]property
     }
 
     class immutableConfiguration {
-        -name string
-        -properties map[string]property
+        #iName string
+        #iProperties map[string]property
     }
     note right : used by Default
 
-    class property {
-        -name string
-        -value interface{}
+    class immutableProperty {
+        #iName string
+        #iValue interface{}
+    }
+
+    class marshallableProperty {
+        +NameAttr string
+        +ValueAttr interface{}
     }
 
     class configurationError {
-        -message string
-        -cause error
+        #message string
+        #cause error
     }
 
 }
@@ -57,9 +68,10 @@ package eliteConfiguration <<Frame>> #DD {
 eliteConfiguration +-- errors
 
 Configuration <|.. immutableConfiguration
-Error <|.. configurationError
-immutableConfiguration *-- "*" property : contains >
-mutableConfiguration *-- "*" property : contains >
+error <|.. configurationError
+Property <|.. immutableProperty
+Configuration *-- "*" Property : contains >
+marshallableConfiguration *-- "*" marshallableProperty : contains >
 
 
 ' Plant UML configuration --------------------------------------------
