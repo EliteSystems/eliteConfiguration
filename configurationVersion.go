@@ -3,7 +3,7 @@ package eliteConfiguration
 const (
 	version = "0"
 	release = "2"
-	hotfix  = "1"
+	hotfix  = "2"
 	feature = "0"
 )
 

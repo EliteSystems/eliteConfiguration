@@ -1,6 +1,6 @@
 = eliteConfiguration image:go-documentation-blue.svg[GoDoc, link="http://godoc.org/github.com/EliteSystems/eliteConfiguration", role="external", window="_blank"]
 Cédric LARA-MARTIL <git@cedric.laramartil.fr>, Christophe MARTY <git@chrismarty.fr>
-v0.2, May 2016: Documentation's review
+v0.2.2, May 2016: Documentation's review
 :authorinitials: @cLaraMartil & @chrismarty34
 :doctype: article
 :source-highlighter: coderay
@@ -51,6 +51,10 @@ err := conf.Save(configuration, "./conf.json")
 ----
 
 == Releases notes
+
+=== 0.2.2
+
+* fix a bug when loading JSON Configuration files.
 
 === 0.2.1
 
