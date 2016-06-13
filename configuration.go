@@ -232,7 +232,7 @@ func Load(fileName string) (Configuration, error) {
 		var returnConfiguration Configuration = immutableConfiguration{iName: configuration.NameAttr}
 		if configuration.PropertiesAttr != nil {
 			for key, value := range configuration.PropertiesAttr {
-				returnConfiguration = returnConfiguration.Add(key, value)
+				returnConfiguration = returnConfiguration.Add(key, value.ValueAttr)
 			}
 		}
 		// Add/Replace RootPath to configuration
