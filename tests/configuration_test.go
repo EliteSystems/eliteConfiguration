@@ -50,7 +50,11 @@ func TestLoadValidConfiguration(t *testing.T) {
 
 	case configuration.Size() != 4:
 		t.Errorf("Configuration's size should be 4 not %v", configuration.Size())
+
+	case returnValue(configuration.Value("Key1"))[0] != returnValue(validImmutableConfiguration.Value("Key1"))[0]:
+		t.Errorf("Loaded Configuration should have same values than in memory validImmutableConfiguration (%v, %v)", returnValue(configuration.Value("Key1"))[0], returnValue(validImmutableConfiguration.Value("Key1"))[0])
 	}
+
 }
 
 /*
