@@ -1,6 +1,6 @@
 = eliteConfiguration image:go-documentation-blue.svg[GoDoc, link="http://godoc.org/github.com/EliteSystems/eliteConfiguration", role="external", window="_blank"]
 Cédric LARA-MARTIL <git@cedric.laramartil.fr>, Christophe MARTY <git@chrismarty.fr>
-v0.2.2, May 2016: Documentation's review
+v0.3.0, May 2016: Documentation's review
 :authorinitials: @cLaraMartil & @chrismarty34
 :doctype: article
 :source-highlighter: coderay
@@ -15,6 +15,7 @@ v0.2.2, May 2016: Documentation's review
 The Configurations used are totally immutable.
 
 == How to install
+
 [source, bash]
 ----
 $ go get github.com/EliteSystems/eliteConfiguration
@@ -51,6 +52,10 @@ err := conf.Save(configuration, "./conf.json")
 ----
 
 == Releases notes
+
+=== 0.3.0
+
+* Configuration interface now provide a method "Property(name string) property" to always get a Property (with nil value if non existent Property).
 
 === 0.2.2
 
