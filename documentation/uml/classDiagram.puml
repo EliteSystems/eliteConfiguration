@@ -21,11 +21,13 @@ package eliteConfiguration <<Frame>> #DD {
 
     interface Configuration {
         +Name() string
-        +SetName(requiredName string) Configuration
+        +SetName(name string) Configuration
         +Value(name string) (interface{}, error)
         +Add(name string, value interface{}) Configuration
         +Remove(name string) Configuration
         +Size() int
+        +Property(name string) Property
+        #newProperty(name string, value interface{}) Property
         #properties() map[string]Property
     }
 

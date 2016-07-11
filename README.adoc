@@ -15,6 +15,7 @@ v0.2.2, May 2016: Documentation's review
 The Configurations used are totally immutable.
 
 == How to install
+
 [source, bash]
 ----
 $ go get github.com/EliteSystems/eliteConfiguration

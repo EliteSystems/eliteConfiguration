@@ -223,3 +223,30 @@ func TestConfigurationValueWithNonExistingPropertyName(t *testing.T) {
 		t.Errorf("Configuration.Value(\"Key4\") should return error")
 	}
 }
+
+/*
+Try to get the Property with a non-existing Name
+*/
+func TestConfigurationPropertyWithNonExistingName(t *testing.T) {
+
+	property := validImmutableConfiguration.Property("Key4")
+	fmt.Printf("test : %v", property)
+	_, ok := property.(conf.Property)
+
+	if property == nil || !ok {
+		t.Errorf("Configuration.Property(\"Key4\") should return a Property")
+	}
+}
+
+/*
+Try to get the Property with an existing Name
+*/
+func TestConfigurationPropertyWithExistingName(t *testing.T) {
+
+	property := validImmutableConfiguration.Property("Key3")
+	_, ok := property.(conf.Property)
+
+	if property == nil || !ok {
+		t.Errorf("Configuration.Property(\"Key3\") should return a Property")
+	}
+}

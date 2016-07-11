@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
+	"path/filepath"
 )
 
 /*
@@ -27,11 +28,13 @@ with a Name, a set of Values accessed by their Name and a Size
 */
 type Configuration interface {
 	Name() string
-	SetName(requiredName string) Configuration
+	SetName(name string) Configuration
 	Value(name string) (interface{}, error)
 	Add(name string, value interface{}) Configuration
 	Remove(name string) Configuration
 	Size() int
+	Property(name string) Property
+	newProperty(name string, value interface{}) Property
 	properties() map[string]Property
 }
 
@@ -113,13 +116,13 @@ func (configuration immutableConfiguration) SetName(requiredName string) Configu
 }
 
 /*
-Value return the Value of a specified named Property. If Property doesn't exist an error is returned.
+Value return the raw(untyped) Value of a specified named Property. If Property doesn't exist an error is returned.
 */
-func (configuration immutableConfiguration) Value(name string) (interface{}, error) {
+func (configuration immutableConfiguration) Value(requiredName string) (interface{}, error) {
 
 	// Access to Property by its Name
-	if property, exist := configuration.iProperties[name]; !exist {
-		return nil, newError("Configuration.Value(\""+name+"\")", errors.New("Key not found"))
+	if property, exist := configuration.iProperties[requiredName]; !exist {
+		return nil, newError("Configuration.Value(\""+requiredName+"\")", errors.New("Key not found"))
 	} else {
 		return property.Value(), nil
 	}
@@ -137,7 +140,7 @@ func (configuration immutableConfiguration) Add(requiredName string, optionalVal
 			mapCopy[key] = value
 		}
 	}
-	mapCopy[requiredName] = immutableProperty{iName: requiredName, iValue: optionalValue}
+	mapCopy[requiredName] = configuration.newProperty(requiredName, optionalValue)
 
 	// Change the map of configuration with the copy
 	configuration.iProperties = mapCopy
@@ -171,6 +174,27 @@ Size return the size of the configuration (Number of properties)
 */
 func (configuration immutableConfiguration) Size() int {
 	return len(configuration.iProperties)
+}
+
+/*
+Property always return a Property with the requiredName. The Configuration one if exists, a new one else
+*/
+func (configuration immutableConfiguration) Property(requiredName string) Property {
+
+	// Access to Property by its Name
+	if property, exist := configuration.iProperties[requiredName]; exist {
+		return property
+	}
+
+	// Return a new Property if not exist
+	return configuration.newProperty(requiredName, nil)
+}
+
+/*
+newProperty instantiate and return an appropriate Configuration's Property
+*/
+func (configuration immutableConfiguration) newProperty(requiredName string, optionalValue interface{}) Property {
+	return immutableProperty{iName: requiredName, iValue: optionalValue}
 }
 
 /*
@@ -221,7 +245,7 @@ Load fileName with valid JSON Content into a returned immutable Configuration
 func Load(fileName string) (Configuration, error) {
 
 	// Read fileName
-	jsonContent, err := ioutil.ReadFile(fileName)
+	jsonContent, err := ioutil.ReadFile(filepath.FromSlash(fileName))
 	if err != nil {
 		return nil, newError("ioutil.ReadFile("+fileName+")", err)
 	}
@@ -259,7 +283,7 @@ func Save(configuration Configuration, fileName string) error {
 		}
 
 		// Write JSON content to fileName
-		if err := ioutil.WriteFile(fileName, jsonIndentedContent.Bytes(), 0600); err != nil {
+		if err := ioutil.WriteFile(filepath.FromSlash(fileName), jsonIndentedContent.Bytes(), 0600); err != nil {
 			messageError = newError("ioutil.WriteFile("+fileName+")", err)
 		}
 	}
