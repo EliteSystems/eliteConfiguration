@@ -250,3 +250,23 @@ func TestConfigurationPropertyWithExistingName(t *testing.T) {
 		t.Errorf("Configuration.Property(\"Key3\") should return a Property")
 	}
 }
+
+/*
+Check if Property exist when should exist
+*/
+func TestConfigurationHasPropertyWithExistingName(t *testing.T) {
+
+	if exist := validImmutableConfiguration.HasProperty("Key3"); !exist {
+		t.Errorf("Configuration.HasProperty(\"Key3\") should return true")
+	}
+}
+
+/*
+Check if Property exist when should not
+*/
+func TestConfigurationHasPropertyWithNonExistingName(t *testing.T) {
+
+	if exist := validImmutableConfiguration.HasProperty("Key4"); exist {
+		t.Errorf("Configuration.HasProperty(\"Key4\") should return false")
+	}
+}
