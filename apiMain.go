@@ -32,6 +32,7 @@ type Configuration interface {
 	Remove(name string) Configuration
 	Size() int
 	Property(name string) Property
+	HasProperty(name string) bool
 	newProperty(name string, value interface{}) Property
 	properties() map[string]Property
 }

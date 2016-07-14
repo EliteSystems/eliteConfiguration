@@ -104,6 +104,15 @@ func (configuration immutableConfiguration) Property(requiredName string) Proper
 	return configuration.newProperty(requiredName, nil)
 }
 
+func (configuration immutableConfiguration) HasProperty(requiredName string) bool {
+
+	// Access to Property by its Name
+	if _, exist := configuration.iProperties[requiredName]; exist {
+		return true
+	}
+	return false
+}
+
 /*
 newProperty instantiate and return an appropriate Configuration's Property
 */
