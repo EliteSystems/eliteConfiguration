@@ -9,8 +9,9 @@ import "errors"
 immutableConfiguration is an internal immutable Configuration struct
 */
 type immutableConfiguration struct {
-	iName       string
-	iProperties map[string]Property
+	iName         string
+	iProperties   map[string]Property
+	iDefaultValue interface{}
 }
 
 /*
@@ -120,7 +121,11 @@ func (configuration immutableConfiguration) HasProperty(requiredName string) boo
 newProperty instantiate and return an appropriate Configuration's Property
 */
 func (configuration immutableConfiguration) newProperty(requiredName string, optionalValue interface{}) Property {
-	return immutableProperty{iName: requiredName, iValue: optionalValue}
+	value := optionalValue
+	if (value == nil) && configuration.iDefaultValue != nil {
+		value = configuration.iDefaultValue
+	}
+	return immutableProperty{iName: requiredName, iValue: value}
 }
 
 /*
@@ -128,4 +133,12 @@ properties return the all the properties of the configuration
 */
 func (configuration immutableConfiguration) properties() map[string]Property {
 	return configuration.iProperties
+}
+
+/*
+Default set the default value for an empty Property. Value is not saved for next call.
+*/
+func (configuration immutableConfiguration) Default(value interface{}) Configuration {
+	configuration.iDefaultValue = value
+	return configuration
 }
