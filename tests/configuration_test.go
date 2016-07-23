@@ -40,7 +40,7 @@ Try to Load a Configuration from valid JSON file
 */
 func TestLoadValidConfiguration(t *testing.T) {
 
-	switch configuration, err := conf.Load(validConfigurationFile); true {
+	switch configuration, err := conf.Load(validConfigurationFile); {
 
 	case err != nil:
 		t.Errorf(err.Error())
@@ -72,7 +72,7 @@ Try to Load a Configuration from valid JSON file
 */
 func TestLoadEmptyConfiguration(t *testing.T) {
 
-	switch configuration, _ := conf.Load(emptyConfigurationFile); true {
+	switch configuration, _ := conf.Load(emptyConfigurationFile); {
 
 	case configuration.Size() == 0:
 		t.Errorf("EmptyConfiguration should contains the rootPath Property")
@@ -230,7 +230,6 @@ Try to get the Property with a non-existing Name
 func TestConfigurationPropertyWithNonExistingName(t *testing.T) {
 
 	property := validImmutableConfiguration.Property("Key4")
-	fmt.Printf("test : %v", property)
 	_, ok := property.(conf.Property)
 
 	if property == nil || !ok {
@@ -268,5 +267,15 @@ func TestConfigurationHasPropertyWithNonExistingName(t *testing.T) {
 
 	if exist := validImmutableConfiguration.HasProperty("Key4"); exist {
 		t.Errorf("Configuration.HasProperty(\"Key4\") should return false")
+	}
+}
+
+/*
+Check if Non existing Property has the correct default value
+*/
+func TestConfigurationDefaultValueWithNonExistingName(t *testing.T) {
+
+	if property := validImmutableConfiguration.Default("DefaultValue").Property("Key4"); property.Value().(string) != "DefaultValue" {
+		t.Errorf("Configuration.Default(\"DefaultValue\").Property(\"Key4\") should return \"DefaultValue\", not %v", property.Value())
 	}
 }

@@ -35,6 +35,7 @@ type Configuration interface {
 	HasProperty(name string) bool
 	newProperty(name string, value interface{}) Property
 	properties() map[string]Property
+	Default(value interface{}) Configuration
 }
 
 /*

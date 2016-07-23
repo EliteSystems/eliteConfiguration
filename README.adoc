@@ -55,6 +55,7 @@ err := conf.Save(configuration, "./conf.json")
 
 === 0.3.0
 
+* Configuration interface now provide a method "Default(value interface{}) Configuration" to have a default value for nil Properties.
 * Configuration interface now provide a method "HasProperty(name string) bool" to check if a named Property exist or not.
 * Configuration interface now provide a method "Property(name string) property" to always get a Property (with nil value if non existent Property).
 
