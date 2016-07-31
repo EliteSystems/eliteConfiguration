@@ -121,6 +121,7 @@ func (configuration immutableConfiguration) HasProperty(requiredName string) boo
 newProperty instantiate and return an appropriate Configuration's Property
 */
 func (configuration immutableConfiguration) newProperty(requiredName string, optionalValue interface{}) Property {
+
 	value := optionalValue
 	if (value == nil) && configuration.iDefaultValue != nil {
 		value = configuration.iDefaultValue
@@ -129,7 +130,7 @@ func (configuration immutableConfiguration) newProperty(requiredName string, opt
 }
 
 /*
-properties return the all the properties of the configuration
+properties return all the properties of the configuration
 */
 func (configuration immutableConfiguration) properties() map[string]Property {
 	return configuration.iProperties
@@ -139,6 +140,7 @@ func (configuration immutableConfiguration) properties() map[string]Property {
 Default set the default value for an empty Property. Value is not saved for next call.
 */
 func (configuration immutableConfiguration) Default(value interface{}) Configuration {
+
 	configuration.iDefaultValue = value
 	return configuration
 }

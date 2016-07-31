@@ -150,7 +150,7 @@ Try to change the Name of a configuration
 func TestNameImmutability(t *testing.T) {
 
 	if configuration := validImmutableConfiguration.SetName("NewName"); configuration.Name() == validImmutableConfiguration.Name() {
-		t.Errorf("configuration's name is not immutable")
+		t.Errorf("Configuration's name is not immutable")
 	}
 }
 
@@ -277,5 +277,19 @@ func TestConfigurationDefaultValueWithNonExistingName(t *testing.T) {
 
 	if property := validImmutableConfiguration.Default("DefaultValue").Property("Key4"); property.Value().(string) != "DefaultValue" {
 		t.Errorf("Configuration.Default(\"DefaultValue\").Property(\"Key4\") should return \"DefaultValue\", not %v", property.Value())
+	}
+}
+
+/*
+Check immutability for default value of Non existing Property
+*/
+func TestConfigurationDefaultValueWithNonExistingNameImmutability(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+	var defaultValue = "DefaultValue"
+
+	validImmutableConfiguration.Default(defaultValue)
+	if property := validImmutableConfiguration.Property(nonExistingKey); property.Value() != nil {
+		t.Errorf("Configuration.Default() is not immutable")
 	}
 }

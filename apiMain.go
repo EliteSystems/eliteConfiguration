@@ -48,11 +48,20 @@ type Property interface {
 }
 
 /*
-New return a new immutable Configuration with the required Name
+New return a new default (immutable) Configuration with the required Name
 */
 func New(requiredName string) Configuration {
 
 	configuration := immutableConfiguration{iName: requiredName}
+	return configuration
+}
+
+/*
+New return a new mutable Configuration with the required Name
+*/
+func NewMutable(requiredName string) Configuration {
+
+	configuration := &mutableConfiguration{NameAttr: requiredName}
 	return configuration
 }
 
