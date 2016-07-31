@@ -7,20 +7,20 @@ package eliteConfiguration
 mutableProperty is an internal mutable Property struct
 */
 type mutableProperty struct {
-	NameAttr  string
-	ValueAttr interface{}
+	iName  string
+	iValue interface{}
 }
 
 /*
 Name get the Property's Name
 */
 func (property *mutableProperty) Name() string {
-	return property.NameAttr
+	return property.iName
 }
 
 /*
 Value get the Property's Value
 */
 func (property *mutableProperty) Value() interface{} {
-	return property.ValueAttr
+	return property.iValue
 }

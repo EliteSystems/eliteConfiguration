@@ -61,7 +61,7 @@ New return a new mutable Configuration with the required Name
 */
 func NewMutable(requiredName string) Configuration {
 
-	configuration := &mutableConfiguration{NameAttr: requiredName}
+	configuration := &mutableConfiguration{iName: requiredName}
 	return configuration
 }
 
