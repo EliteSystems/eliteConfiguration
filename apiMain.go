@@ -82,16 +82,17 @@ Load fileName with valid JSON Content into a returned immutable Configuration
 */
 func Load(fileName string) (Configuration, error) {
 
-	// Read fileName
-	jsonContent, err := ioutil.ReadFile(filepath.FromSlash(fileName))
+	jsonContent, err := readFile(fileName)
 	if err != nil {
-		return nil, newError("ioutil.ReadFile("+fileName+")", err)
+		return nil, err
 	}
 
-	// Create new immutableConfiguration
+	// Get marshallableConfiguration from JSON
 	configuration, messageError := newFromJSON(jsonContent)
+
+	// Create new immutableConfiguration
 	if messageError == nil {
-		var returnConfiguration Configuration = immutableConfiguration{iName: configuration.NameAttr}
+		var returnConfiguration Configuration = New(configuration.NameAttr)
 		if configuration.PropertiesAttr != nil {
 			for key, value := range configuration.PropertiesAttr {
 				returnConfiguration = returnConfiguration.Add(key, value.ValueAttr)
@@ -135,14 +136,14 @@ toJSON return JSON's content from the Configuration
 func toJSON(configuration Configuration) ([]byte, error) {
 
 	var messageError error
-	jsonContent, err := json.Marshal(toMutable(configuration))
+	jsonContent, err := json.Marshal(toMarshallable(configuration))
 	if err != nil {
 		messageError = newError("Configuration.toJSON()", err)
 	}
 	return jsonContent, messageError
 }
 
-func toMutable(configuration Configuration) marshallableConfiguration {
+func toMarshallable(configuration Configuration) marshallableConfiguration {
 
 	returnConfiguration := marshallableConfiguration{NameAttr: configuration.Name(), PropertiesAttr: make(map[string]marshallableProperty)}
 	if configuration.properties() != nil {
@@ -160,4 +161,16 @@ newError return a new configurationError with required message and optional caus
 func newError(requiredMessage string, optionalCause error) error {
 
 	return configurationError{message: requiredMessage, cause: optionalCause}
+}
+
+/*
+readFile is an internal method to read the fileName content
+*/
+func readFile(fileName string) ([]byte, error) {
+
+	fileContent, err := ioutil.ReadFile(filepath.FromSlash(fileName))
+	if err != nil {
+		return nil, newError("ioutil.ReadFile("+fileName+")", err)
+	}
+	return fileContent, nil
 }
