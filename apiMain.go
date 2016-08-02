@@ -21,6 +21,15 @@ const (
 )
 
 /*
+API is a facade to the API available's methods
+*/
+type API interface {
+	New(requiredName string) Configuration
+	Load(fileName string) (Configuration, error)
+	Save(configuration Configuration, fileName string) error
+}
+
+/*
 Configuration is the main packages's interface used to manipulate configurations structs
 with a Name, a set of Values accessed by their Name and a Size
 */
@@ -48,25 +57,28 @@ type Property interface {
 }
 
 /*
-New return a new default (immutable) Configuration with the required Name
+Default return the default (recommended) API facade to manipulate Configurations
 */
-func New(requiredName string) Configuration {
-
-	configuration := immutableConfiguration{iName: requiredName}
-	return configuration
+func Default() API {
+	return immutableState{}
 }
 
 /*
-New return a new mutable Configuration with the required Name
+Immutable return the immutable API facade to manipulate immutables Configurations
 */
-func NewMutable(requiredName string) Configuration {
-
-	configuration := &mutableConfiguration{iName: requiredName}
-	return configuration
+func Immutable() API {
+	return immutableState{}
 }
 
 /*
-newFromJSON return a new mutableConfiguration from the jsonContent
+Mutable return the mutable API facade to manipulate mutables Configurations
+*/
+func Mutable() API {
+	return mutableState{}
+}
+
+/*
+newFromJSON return a new marshallableConfiguration from the jsonContent
 */
 func newFromJSON(jsonContent []byte) (configuration marshallableConfiguration, messageError error) {
 
@@ -78,9 +90,9 @@ func newFromJSON(jsonContent []byte) (configuration marshallableConfiguration, m
 }
 
 /*
-Load fileName with valid JSON Content into a returned immutable Configuration
+load fileName with valid JSON Content into a returned Configuration
 */
-func Load(fileName string) (Configuration, error) {
+func load(fileName string, createNew func(requiredName string) Configuration) (Configuration, error) {
 
 	jsonContent, err := readFile(fileName)
 	if err != nil {
@@ -92,7 +104,7 @@ func Load(fileName string) (Configuration, error) {
 
 	// Create new immutableConfiguration
 	if messageError == nil {
-		var returnConfiguration Configuration = New(configuration.NameAttr)
+		var returnConfiguration Configuration = createNew(configuration.NameAttr)
 		if configuration.PropertiesAttr != nil {
 			for key, value := range configuration.PropertiesAttr {
 				returnConfiguration = returnConfiguration.Add(key, value.ValueAttr)
@@ -106,9 +118,9 @@ func Load(fileName string) (Configuration, error) {
 }
 
 /*
-Save a Configuration to fileName in indented JSON format
+save a Configuration to fileName in indented JSON format
 */
-func Save(configuration Configuration, fileName string) error {
+func save(configuration Configuration, fileName string) error {
 
 	// Serialize Configuration struct to JSON
 	jsonContent, messageError := toJSON(configuration)
@@ -143,6 +155,9 @@ func toJSON(configuration Configuration) ([]byte, error) {
 	return jsonContent, messageError
 }
 
+/*
+toMarshallable convert a Configuration to a marshallableConfiguration
+*/
 func toMarshallable(configuration Configuration) marshallableConfiguration {
 
 	returnConfiguration := marshallableConfiguration{NameAttr: configuration.Name(), PropertiesAttr: make(map[string]marshallableProperty)}
@@ -164,7 +179,7 @@ func newError(requiredMessage string, optionalCause error) error {
 }
 
 /*
-readFile is an internal method to read the fileName content
+readFile is an internal method to read and return the fileName content
 */
 func readFile(fileName string) ([]byte, error) {
 

@@ -12,7 +12,7 @@ v0.3.0, May 2016: Documentation's review
 //:pdf-page-size: A4
 
 *eliteConfiguration* lets you load/save _GoLang_ *Configurations* _structs_ from/to JSON's files, and manipulate them.
-The Configurations used are totally immutable.
+The Configurations used can be totally immutable (default) or mutable.
 
 == How to install
 
@@ -31,7 +31,7 @@ package main
 import conf "github.com/EliteSystems/eliteConfiguration"
 ...
 // Load Configuration from file "./conf.json"
-if configuration, err := conf.Load("./conf.json"); err == nil {
+if configuration, err := conf.Default().Load("./conf.json"); err == nil {
         // Access to RootPath Property (Always exists after Loading Configuration from file)
         rootPath string := configuration.Value(conf.RootPathKey)
 }
@@ -45,17 +45,29 @@ package main
 import conf "github.com/EliteSystems/eliteConfiguration"
 ...
 // Create a new Configuration
-configuration := conf.New("Configuration")
+configuration := conf.Default().New("Configuration")
 ...
 // save Configuration to file "./conf.json"
-err := conf.Save(configuration, "./conf.json")
+err := conf.Default().Save(configuration, "./conf.json")
 ----
+
+== APi Mutability
+
+Immutable Configurations :: are recommended, thread safe and the default.
+Mutable Configurations :: are available if needed for better performances on very large configurations but not thread safe.
 
 == Releases notes
 
 === 0.3.0
 
-* API now provide a function "NewMutable(requiredName string) Configuration" to get a *mutableConfiguration struct.
+* API now has *mutableConfiguration struct for better performances in very large Configurations.
+* API now provide a function "Default() API" to use the default and recommended API.
+* API now provide a function "Immutable() API" to explicitly use the immutable API.
+* API now provide a function "Mutable() API" to explicitly use the mutable API.
+* Adding "API" interface to call exposed functions
+** "API" interface now provide a function "Load(fileName string) (Configuration, error)" to Load a JSON configuration file with a Property "RootPathKey" in all cases.
+** "API" interface now provide a function "Save(configuration Configuration, fileName string) error" to save a configuration into JSON file.
+** "API" interface now provide a function "New(requiredName string) Configuration" to create a new Configuration.
 * Configuration interface now provide a method "Default(value interface{}) Configuration" to have a default value for nil Properties.
 * Configuration interface now provide a method "HasProperty(name string) bool" to check if a named Property exist or not.
 * Configuration interface now provide a method "Property(name string) property" to always get a Property (with nil value if non existent Property).

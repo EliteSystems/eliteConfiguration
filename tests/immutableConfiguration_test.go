@@ -17,8 +17,8 @@ var (
 	invalidConfigurationFile     = testsPath + "invalidConfiguration"
 	emptyConfigurationFile       = testsPath + "emptyConfiguration.json"
 	nonExistingPath              = testsPath + filepath.FromSlash("not/existing/path/")
-	zeroValueConfiguration       = conf.New("")
-	validImmutableConfiguration  = conf.New("validConfiguration").Add("Key1", "Value1").Add("Key2", "Value2").Add("Key3", "Value3")
+	zeroValueConfiguration       = conf.Immutable().New("")
+	validImmutableConfiguration  = conf.Immutable().New("validConfiguration").Add("Key1", "Value1").Add("Key2", "Value2").Add("Key3", "Value3")
 )
 
 /*
@@ -40,7 +40,7 @@ Try to Load a Configuration from valid JSON file
 */
 func TestLoadValidConfiguration(t *testing.T) {
 
-	switch configuration, err := conf.Load(validConfigurationFile); {
+	switch configuration, err := conf.Immutable().Load(validConfigurationFile); {
 
 	case err != nil:
 		t.Errorf(err.Error())
@@ -62,7 +62,7 @@ Try to Load a Configuration from valid JSON file
 */
 func TestLoadInvalidConfiguration(t *testing.T) {
 
-	if _, err := conf.Load(invalidConfigurationFile); err == nil {
+	if _, err := conf.Immutable().Load(invalidConfigurationFile); err == nil {
 		t.Errorf("Load invalid Configuration should has return an error")
 	}
 }
@@ -72,7 +72,7 @@ Try to Load a Configuration from valid JSON file
 */
 func TestLoadEmptyConfiguration(t *testing.T) {
 
-	switch configuration, _ := conf.Load(emptyConfigurationFile); {
+	switch configuration, _ := conf.Immutable().Load(emptyConfigurationFile); {
 
 	case configuration.Size() == 0:
 		t.Errorf("EmptyConfiguration should contains the rootPath Property")
@@ -84,7 +84,7 @@ Try to Load a Configuration from non existing file
 */
 func TestLoadNonExistingConfiguration(t *testing.T) {
 
-	if _, err := conf.Load(nonExistingConfigurationFile); err == nil {
+	if _, err := conf.Immutable().Load(nonExistingConfigurationFile); err == nil {
 		t.Errorf("Non existing file should has return an error")
 	}
 }
@@ -159,7 +159,7 @@ Try to Save a Configuration with passing no file in argument
 */
 func TestConfigurationSaveWithNoFile(t *testing.T) {
 
-	if err := conf.Save(validImmutableConfiguration, ""); err == nil {
+	if err := conf.Immutable().Save(validImmutableConfiguration, ""); err == nil {
 		t.Errorf("Save() should return an error when passing no file")
 	}
 }
@@ -170,7 +170,7 @@ Try to Save a Configuration in an non existing path
 func TestConfigurationSaveWithNonExistingPath(t *testing.T) {
 
 	if _, err := os.Stat(nonExistingPath); os.IsNotExist(err) {
-		if err := conf.Save(validImmutableConfiguration, nonExistingPath+"file.json"); err == nil {
+		if err := conf.Immutable().Save(validImmutableConfiguration, nonExistingPath+"file.json"); err == nil {
 			t.Errorf("Save() should return error for non existing directory")
 		}
 	} else {
@@ -184,7 +184,7 @@ Try to Save a Configuration in an existing path and Compare result file with val
 func TestConfigurationSaveWithExistingPath(t *testing.T) {
 
 	// Verify that Save() don't throw any error
-	if err := conf.Save(validImmutableConfiguration, testsPath+"save.json"); err != nil {
+	if err := conf.Immutable().Save(validImmutableConfiguration, testsPath+"save.json"); err != nil {
 		t.Errorf("Save() should not return an error")
 	}
 
