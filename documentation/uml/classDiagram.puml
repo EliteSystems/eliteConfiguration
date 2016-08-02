@@ -14,6 +14,7 @@ package eliteConfiguration <<Frame>> #DD {
 
     note as packageMethods
         +New(requiredName string) Configuration
+        +NewMutable(requiredName string) Configuration
         +Load(fileName string) (Configuration, error)
         +Save(configuration Configuration, fileName string) error
         +Version() string
@@ -40,16 +41,28 @@ package eliteConfiguration <<Frame>> #DD {
 
     class marshallableConfiguration {
         +NameAttr string
-        +PropertiesAttr map[string]property
+        +PropertiesAttr map[string]Property
+    }
+
+    class mutableConfiguration {
+        #iName string
+        #iProperties map[string]Property
+        #iDefaultValue interface{}
     }
 
     class immutableConfiguration {
         #iName string
-        #iProperties map[string]property
+        #iProperties map[string]Property
+        #iDefaultValue interface{}
     }
     note right : used by Default
 
     class immutableProperty {
+        #iName string
+        #iValue interface{}
+    }
+
+    class mutableProperty {
         #iName string
         #iValue interface{}
     }
@@ -72,10 +85,14 @@ package eliteConfiguration <<Frame>> #DD {
 eliteConfiguration +-- errors
 
 Configuration <|.. immutableConfiguration
+Configuration <|.. mutableConfiguration
 error <|.. configurationError
 Property <|.. immutableProperty
-Configuration *-- "*" Property : contains >
+Property <|.. mutableProperty
+Configuration *--- "*" Property : contains >
 marshallableConfiguration *-- "*" marshallableProperty : contains >
+immutableConfiguration *-- "*" immutableProperty : contains >
+mutableConfiguration *-- "*" mutableProperty : contains >
 
 
 ' Plant UML configuration --------------------------------------------
