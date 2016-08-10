@@ -1,12 +1,15 @@
 package eliteConfiguration_test
 
 import (
+	"bytes"
 	conf "github.com/EliteSystems/eliteConfiguration"
+	"io/ioutil"
+	"os"
 	"testing"
 )
 
 var (
-	validMutableConfiguration = conf.NewMutable("validConfiguration").Add("Key1", "Value1").Add("Key2", "Value2").Add("Key3", "Value3")
+	validMutableConfiguration = conf.Mutable().New("validConfiguration").Add("Key1", "Value1").Add("Key2", "Value2").Add("Key3", "Value3")
 )
 
 /*
@@ -157,5 +160,105 @@ func TestConfigurationDefaultValueWithNonExistingNameMutability(t *testing.T) {
 	validMutableConfiguration.Default(defaultValue)
 	if property := validMutableConfiguration.Property(nonExistingKey); property.Value().(string) != defaultValue {
 		t.Errorf("Configuration.Default(\"%v\") should be \"%v\" not \"%v\"", nonExistingKey, defaultValue, property.Value())
+	}
+}
+
+/*
+Try to Save a Configuration with passing no file in argument
+*/
+func TestMutableConfigurationSaveWithNoFile(t *testing.T) {
+
+	if err := conf.Mutable().Save(validMutableConfiguration, ""); err == nil {
+		t.Errorf("Save() should return an error when passing no file")
+	}
+}
+
+/*
+Try to Save a Configuration in an non existing path
+*/
+func TestMutableConfigurationSaveWithNonExistingPath(t *testing.T) {
+
+	if _, err := os.Stat(nonExistingPath); os.IsNotExist(err) {
+		if err := conf.Mutable().Save(validMutableConfiguration, nonExistingPath+"file.json"); err == nil {
+			t.Errorf("Save() should return error for non existing directory")
+		}
+	} else {
+		t.Errorf("Test can't be performed, the path %v should not exist", nonExistingPath)
+	}
+}
+
+/*
+Try to Save a Configuration in an existing path and Compare result file with valid
+*/
+func TestMutableConfigurationSaveWithExistingPath(t *testing.T) {
+
+	// Verify that Save() don't throw any error
+	configurationToSave := conf.Mutable().New("validConfiguration").Add("Key1", "Value1").Add("Key2", "Value2").Add("Key3", "Value3")
+	if err := conf.Mutable().Save(configurationToSave, testsPath+"save.json"); err != nil {
+		t.Errorf("Save() should not return an error")
+	}
+
+	// Compare the saved file content with the validConfigurationFile content
+	if jsonContent, err := ioutil.ReadFile(testsPath + "save.json"); err == nil {
+		if compareContent, _ := ioutil.ReadFile(validConfigurationFile); bytes.Compare(jsonContent, compareContent) != 0 {
+			t.Errorf("Save(): the JSON content saved is not equal to validConfiguration.json file")
+		}
+	}
+
+	// Clean files added
+	os.Remove(testsPath + "save.json")
+}
+
+/*
+Try to Load a Configuration from valid JSON file
+*/
+func TestLoadValidMutableConfiguration(t *testing.T) {
+
+	switch configuration, err := conf.Mutable().Load(validConfigurationFile); {
+
+	case err != nil:
+		t.Errorf(err.Error())
+
+	case configuration.Name() != "validConfiguration":
+		t.Errorf("Configuration.Name should be \"validConfiguration\", not \"%v\"", configuration.Name())
+
+	case configuration.Size() != 4:
+		t.Errorf("Configuration's size should be 4 not %v", configuration.Size())
+
+	case returnValue(configuration.Value("Key1"))[0] != returnValue(validImmutableConfiguration.Value("Key1"))[0]:
+		t.Errorf("Loaded Configuration should have same values than in memory validImmutableConfiguration (%v, %v)", returnValue(configuration.Value("Key1"))[0], returnValue(validImmutableConfiguration.Value("Key1"))[0])
+	}
+
+}
+
+/*
+Try to Load a Configuration from valid JSON file
+*/
+func TestLoadMutableInvalidConfiguration(t *testing.T) {
+
+	if _, err := conf.Mutable().Load(invalidConfigurationFile); err == nil {
+		t.Errorf("Load invalid Configuration should has return an error")
+	}
+}
+
+/*
+Try to Load a Configuration from valid JSON file
+*/
+func TestLoadMutableEmptyConfiguration(t *testing.T) {
+
+	switch configuration, _ := conf.Mutable().Load(emptyConfigurationFile); {
+
+	case configuration.Size() == 0:
+		t.Errorf("EmptyConfiguration should contains the rootPath Property")
+	}
+}
+
+/*
+Try to Load a Configuration from non existing file
+*/
+func TestLoadMutableNonExistingConfiguration(t *testing.T) {
+
+	if _, err := conf.Mutable().Load(nonExistingConfigurationFile); err == nil {
+		t.Errorf("Non existing file should has return an error")
 	}
 }

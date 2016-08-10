@@ -13,12 +13,17 @@ package errors <<Frame>> #E0EBF5 {
 package eliteConfiguration <<Frame>> #DD {
 
     note as packageMethods
-        +New(requiredName string) Configuration
-        +NewMutable(requiredName string) Configuration
-        +Load(fileName string) (Configuration, error)
-        +Save(configuration Configuration, fileName string) error
+        +Default() API
+        +Mutable() API
+        +Immutable() API
         +Version() string
     end note
+
+    interface API {
+        +New(requiredName string) Configuration
+        +Load(fileName string) (Configuration, error)
+        +Save(configuration Configuration, fileName string) error
+    }
 
     interface Configuration {
         +Name() string
@@ -44,22 +49,28 @@ package eliteConfiguration <<Frame>> #DD {
         +PropertiesAttr map[string]Property
     }
 
-    class mutableConfiguration {
-        #iName string
-        #iProperties map[string]Property
-        #iDefaultValue interface{}
+    class immutableState {
     }
+    note right : used by Default
 
     class immutableConfiguration {
         #iName string
         #iProperties map[string]Property
         #iDefaultValue interface{}
     }
-    note right : used by Default
 
     class immutableProperty {
         #iName string
         #iValue interface{}
+    }
+
+    class mutableState {
+    }
+
+    class mutableConfiguration {
+        #iName string
+        #iProperties map[string]Property
+        #iDefaultValue interface{}
     }
 
     class mutableProperty {
@@ -84,6 +95,8 @@ package eliteConfiguration <<Frame>> #DD {
 
 eliteConfiguration +-- errors
 
+API <|.. immutableState
+API <|.. mutableState
 Configuration <|.. immutableConfiguration
 Configuration <|.. mutableConfiguration
 error <|.. configurationError
