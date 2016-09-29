@@ -9,9 +9,8 @@ import "errors"
 immutableConfiguration is an internal immutable Configuration struct
 */
 type immutableConfiguration struct {
-	iName         string
-	iProperties   map[string]Property
-	iDefaultValue interface{}
+	iName       string
+	iProperties map[string]Property
 }
 
 /*
@@ -55,7 +54,9 @@ func (configuration immutableConfiguration) Add(requiredName string, optionalVal
 			mapCopy[key] = value
 		}
 	}
-	mapCopy[requiredName] = configuration.newProperty(requiredName, optionalValue)
+
+	var orphanFlag = false
+	mapCopy[requiredName] = configuration.newProperty(requiredName, optionalValue, orphanFlag)
 
 	// Change the map of configuration with the copy
 	configuration.iProperties = mapCopy
@@ -102,7 +103,8 @@ func (configuration immutableConfiguration) Property(requiredName string) Proper
 	}
 
 	// Return a new Property if not exist
-	return configuration.newProperty(requiredName, nil)
+	var orphanFlag = true
+	return configuration.newProperty(requiredName, nil, orphanFlag)
 }
 
 /*
@@ -120,13 +122,10 @@ func (configuration immutableConfiguration) HasProperty(requiredName string) boo
 /*
 newProperty instantiate and return an appropriate Configuration's Property
 */
-func (configuration immutableConfiguration) newProperty(requiredName string, optionalValue interface{}) Property {
+func (configuration immutableConfiguration) newProperty(requiredName string, optionalValue interface{}, orphanFlag bool) Property {
 
 	value := optionalValue
-	if (value == nil) && configuration.iDefaultValue != nil {
-		value = configuration.iDefaultValue
-	}
-	return immutableProperty{iName: requiredName, iValue: value}
+	return immutableProperty{iName: requiredName, iValue: value, iOrphan: orphanFlag}
 }
 
 /*
@@ -134,13 +133,4 @@ properties return all the properties of the configuration
 */
 func (configuration immutableConfiguration) properties() map[string]Property {
 	return configuration.iProperties
-}
-
-/*
-Default set the default value for an empty Property. Value is not saved for next call.
-*/
-func (configuration immutableConfiguration) Default(value interface{}) Configuration {
-
-	configuration.iDefaultValue = value
-	return configuration
 }

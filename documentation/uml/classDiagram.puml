@@ -34,7 +34,6 @@ package eliteConfiguration <<Frame>> #DD {
         +Size() int
         +Property(name string) Property
         +HasProperty(name string) bool
-        +Default(value interface{}) Configuration
         #newProperty(name string, value interface{}) Property
         #properties() map[string]Property
     }
@@ -42,6 +41,7 @@ package eliteConfiguration <<Frame>> #DD {
     interface Property {
         +Name() string
         +Value() interface{}
+        +WithDefault(defaultValue interface{}) Property
     }
 
     class marshallableConfiguration {

@@ -9,9 +9,8 @@ import "errors"
 mutableConfiguration is an internal mutable Configuration struct
 */
 type mutableConfiguration struct {
-	iName         string
-	iProperties   map[string]Property
-	iDefaultValue interface{}
+	iName       string
+	iProperties map[string]Property
 }
 
 /*
@@ -54,7 +53,8 @@ func (configuration *mutableConfiguration) Add(requiredName string, optionalValu
 	}
 
 	// Add new Property
-	configuration.iProperties[requiredName] = configuration.newProperty(requiredName, optionalValue)
+	var orphanFlag = false
+	configuration.iProperties[requiredName] = configuration.newProperty(requiredName, optionalValue, orphanFlag)
 
 	return configuration
 }
@@ -89,7 +89,8 @@ func (configuration *mutableConfiguration) Property(requiredName string) Propert
 	}
 
 	// Return a new Property if not exist
-	return configuration.newProperty(requiredName, nil)
+	var orphanFlag = true
+	return configuration.newProperty(requiredName, nil, orphanFlag)
 }
 
 /*
@@ -107,13 +108,10 @@ func (configuration *mutableConfiguration) HasProperty(requiredName string) bool
 /*
 newProperty instantiate and return an appropriate Configuration's Property
 */
-func (configuration *mutableConfiguration) newProperty(requiredName string, optionalValue interface{}) Property {
+func (configuration *mutableConfiguration) newProperty(requiredName string, optionalValue interface{}, orphanFlag bool) Property {
 
 	value := optionalValue
-	if (value == nil) && configuration.iDefaultValue != nil {
-		value = configuration.iDefaultValue
-	}
-	return &mutableProperty{iName: requiredName, iValue: value}
+	return &mutableProperty{iName: requiredName, iValue: value, iOrphan: orphanFlag}
 }
 
 /*
@@ -121,13 +119,4 @@ properties return all the properties of the configuration
 */
 func (configuration *mutableConfiguration) properties() map[string]Property {
 	return configuration.iProperties
-}
-
-/*
-Default set the default value for an empty Property. Value is saved for next call.
-*/
-func (configuration *mutableConfiguration) Default(value interface{}) Configuration {
-
-	configuration.iDefaultValue = value
-	return configuration
 }
