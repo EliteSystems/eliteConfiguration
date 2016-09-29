@@ -37,6 +37,7 @@ type Configuration interface {
 	Name() string
 	SetName(name string) Configuration
 	Value(name string) (interface{}, error)
+	ValueWithDefault(name string, defaultValue interface{}) interface{}
 	Add(name string, value interface{}) Configuration
 	Remove(name string) Configuration
 	Size() int

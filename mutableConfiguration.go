@@ -43,6 +43,13 @@ func (configuration *mutableConfiguration) Value(requiredName string) (interface
 }
 
 /*
+ValueWithDefault return the raw(untyped) Value of a specified named Property or the specified defaultValue if Property doesn't exist
+*/
+func (configuration *mutableConfiguration) ValueWithDefault(requiredName string, requiredDefaultValue interface{}) interface{} {
+	return configuration.Property(requiredName).WithDefault(requiredDefaultValue).Value()
+}
+
+/*
 Add a Property to the Configuration returned
 */
 func (configuration *mutableConfiguration) Add(requiredName string, optionalValue interface{}) Configuration {

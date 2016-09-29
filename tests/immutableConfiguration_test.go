@@ -302,3 +302,30 @@ func TestImmutableConfigurationPropertyWithExistingNameWithDefaultValue(t *testi
 		t.Errorf("Property.WithDefault(\"%v\") should not be \"%v\" not \"%v\"", defaultValue, expectedValue, property.Value())
 	}
 }
+
+/*
+Check the returned value for ValueWithDefault and a non existing property name
+*/
+func TestImmutableConfigurationValueWithDefaultWithNonExistingName(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+	var defaultValue = "DefaultValue"
+
+	if value := validImmutableConfiguration.ValueWithDefault(nonExistingKey, defaultValue); value != defaultValue {
+		t.Errorf("Configuration.ValueWithDefault(\"%v\", %v) should be \"%v\" not \"%v\"", nonExistingKey, defaultValue, defaultValue, value)
+	}
+}
+
+/*
+Check if an existing property name return a property with value not changed by defaultValue
+*/
+func TestImmutableConfigurationValueWithDefaultWithExistingName(t *testing.T) {
+
+	var existingKey = "Key3"
+	var expectedValue = "Value3"
+	var defaultValue = "DefaultValue"
+
+	if value := validImmutableConfiguration.ValueWithDefault(existingKey, defaultValue); value != expectedValue {
+		t.Errorf("Configuration.ValueWithDefault(\"%v\", %v) should be \"%v\" not \"%v\"", existingKey, defaultValue, expectedValue, value)
+	}
+}

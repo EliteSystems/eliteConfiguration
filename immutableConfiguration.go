@@ -30,7 +30,7 @@ func (configuration immutableConfiguration) SetName(requiredName string) Configu
 }
 
 /*
-Value return the raw(untyped) Value of a specified named Property. If Property doesn't exist an error is returned.
+Value return the raw(untyped) Value of a specified named Property. If Property doesn't exist an error is returned
 */
 func (configuration immutableConfiguration) Value(requiredName string) (interface{}, error) {
 
@@ -40,6 +40,13 @@ func (configuration immutableConfiguration) Value(requiredName string) (interfac
 	} else {
 		return property.Value(), nil
 	}
+}
+
+/*
+ValueWithDefault return the raw(untyped) Value of a specified named Property or the specified defaultValue if Property doesn't exist
+*/
+func (configuration immutableConfiguration) ValueWithDefault(requiredName string, requiredDefaultValue interface{}) interface{} {
+	return configuration.Property(requiredName).WithDefault(requiredDefaultValue).Value()
 }
 
 /*
