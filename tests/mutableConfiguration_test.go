@@ -15,7 +15,7 @@ var (
 /*
 Try to change the Name of a mutable configuration
 */
-func TestNameMutability(t *testing.T) {
+func TestMutableNameMutability(t *testing.T) {
 
 	var newName = "NewName"
 
@@ -57,7 +57,7 @@ func TestMutableConfigurationValueWithNonExistingPropertyName(t *testing.T) {
 /*
 Try to Add a Value to a mutable Configuration
 */
-func TestConfigurationAddValueMutability(t *testing.T) {
+func TestMutableConfigurationAddValueMutability(t *testing.T) {
 
 	var keyAdded = "KeyAdded"
 	var valueAdded = "ValueAdded"
@@ -71,7 +71,7 @@ func TestConfigurationAddValueMutability(t *testing.T) {
 /*
 Try to change a Value of validMutableConfiguration and check the Mutability
 */
-func TestConfigurationChangeValueMutability(t *testing.T) {
+func TestMutableConfigurationChangeValueMutability(t *testing.T) {
 
 	var key = "Key1"
 	var newValue = "NewValue"
@@ -85,7 +85,7 @@ func TestConfigurationChangeValueMutability(t *testing.T) {
 /*
 Try to remove a Value to the validMutableConfiguration and check the mutability
 */
-func TestConfigurationRemoveValueMutability(t *testing.T) {
+func TestMutableConfigurationRemoveValueMutability(t *testing.T) {
 
 	var key = "Key1"
 
@@ -150,16 +150,15 @@ func TestMutableConfigurationHasPropertyWithExistingName(t *testing.T) {
 }
 
 /*
-Check if Non existing Property has the correct default value
+Check if a non existing property name return a property with default value
 */
-func TestConfigurationDefaultValueWithNonExistingNameMutability(t *testing.T) {
+func TestMutableConfigurationPropertyWithNonExistentNameWithDefaultValue(t *testing.T) {
 
 	var nonExistingKey = "Key4"
 	var defaultValue = "DefaultValue"
 
-	validMutableConfiguration.Default(defaultValue)
-	if property := validMutableConfiguration.Property(nonExistingKey); property.Value().(string) != defaultValue {
-		t.Errorf("Configuration.Default(\"%v\") should be \"%v\" not \"%v\"", nonExistingKey, defaultValue, property.Value())
+	if property := validMutableConfiguration.Property(nonExistingKey).WithDefault(defaultValue); property.Value() != defaultValue {
+		t.Errorf("Property.WithDefault(\"%v\") should be \"%v\" not \"%v\"", defaultValue, defaultValue, property.Value())
 	}
 }
 
@@ -212,7 +211,7 @@ func TestMutableConfigurationSaveWithExistingPath(t *testing.T) {
 /*
 Try to Load a Configuration from valid JSON file
 */
-func TestLoadValidMutableConfiguration(t *testing.T) {
+func TestMutableLoadValidConfiguration(t *testing.T) {
 
 	switch configuration, err := conf.Mutable().Load(validConfigurationFile); {
 
@@ -234,7 +233,7 @@ func TestLoadValidMutableConfiguration(t *testing.T) {
 /*
 Try to Load a Configuration from valid JSON file
 */
-func TestLoadMutableInvalidConfiguration(t *testing.T) {
+func TestMutableLoadInvalidConfiguration(t *testing.T) {
 
 	if _, err := conf.Mutable().Load(invalidConfigurationFile); err == nil {
 		t.Errorf("Load invalid Configuration should has return an error")
@@ -244,7 +243,7 @@ func TestLoadMutableInvalidConfiguration(t *testing.T) {
 /*
 Try to Load a Configuration from valid JSON file
 */
-func TestLoadMutableEmptyConfiguration(t *testing.T) {
+func TestMutableLoadEmptyConfiguration(t *testing.T) {
 
 	switch configuration, _ := conf.Mutable().Load(emptyConfigurationFile); {
 
@@ -256,9 +255,77 @@ func TestLoadMutableEmptyConfiguration(t *testing.T) {
 /*
 Try to Load a Configuration from non existing file
 */
-func TestLoadMutableNonExistingConfiguration(t *testing.T) {
+func TestMutableLoadNonExistingConfiguration(t *testing.T) {
 
 	if _, err := conf.Mutable().Load(nonExistingConfigurationFile); err == nil {
 		t.Errorf("Non existing file should has return an error")
+	}
+}
+
+/*
+Check if a non existing property name return a property with default value
+*/
+func TestMutableConfigurationPropertyWithNonExistingNameWithDefaultValue(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+	var defaultValue = "DefaultValue"
+
+	if property := validMutableConfiguration.Property(nonExistingKey).WithDefault(defaultValue); property.Value() != defaultValue {
+		t.Errorf("Property.WithDefault(\"%v\") should be \"%v\" not \"%v\"", defaultValue, defaultValue, property.Value())
+	}
+}
+
+/*
+Check mutability of a non existing property name that return a property with default value
+*/
+func TestMutableConfigurationPropertyWithNonExistentNameWithDefaultValueMutability(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+	var defaultValue = "DefaultValue"
+	var property = validMutableConfiguration.Property(nonExistingKey)
+
+	if value := property.WithDefault(defaultValue).Value(); value != property.Value() {
+		t.Errorf("Property.WithDefault(\"%v\") and property.Value() should be equals. \"%v\" and \"%v\" found", defaultValue, value, property.Value())
+	}
+}
+
+/*
+Check if an existing property name return a property with value not changed by defaultValue
+*/
+func TestMutableConfigurationPropertyWithExistingNameWithDefaultValue(t *testing.T) {
+
+	var existingKey = "Key3"
+	var expectedValue = "Value3"
+	var defaultValue = "DefaultValue"
+
+	if property := validMutableConfiguration.Property(existingKey).WithDefault(defaultValue); property.Value() != expectedValue {
+		t.Errorf("Property.WithDefault(\"%v\") should not be \"%v\" not \"%v\"", defaultValue, expectedValue, property.Value())
+	}
+}
+
+/*
+Check the returned value for ValueWithDefault and a non existing property name
+*/
+func TestMutableConfigurationValueWithDefaultWithNonExistingName(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+	var defaultValue = "DefaultValue"
+
+	if value := validMutableConfiguration.ValueWithDefault(nonExistingKey, defaultValue); value != defaultValue {
+		t.Errorf("Configuration.ValueWithDefault(\"%v\", %v) should be \"%v\" not \"%v\"", nonExistingKey, defaultValue, defaultValue, value)
+	}
+}
+
+/*
+Check if an existing property name return a property with value not changed by defaultValue
+*/
+func TestMutableConfigurationValueWithDefaultWithExistingName(t *testing.T) {
+
+	var existingKey = "Key3"
+	var expectedValue = "Value3"
+	var defaultValue = "DefaultValue"
+
+	if value := validMutableConfiguration.ValueWithDefault(existingKey, defaultValue); value != expectedValue {
+		t.Errorf("Configuration.ValueWithDefault(\"%v\", %v) should be \"%v\" not \"%v\"", existingKey, defaultValue, expectedValue, value)
 	}
 }

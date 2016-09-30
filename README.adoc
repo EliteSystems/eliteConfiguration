@@ -68,9 +68,10 @@ Mutable Configurations :: are available if needed for better performances on ver
 ** "API" interface now provide a function "Load(fileName string) (Configuration, error)" to Load a JSON configuration file with a Property "RootPathKey" in all cases.
 ** "API" interface now provide a function "Save(configuration Configuration, fileName string) error" to save a configuration into JSON file.
 ** "API" interface now provide a function "New(requiredName string) Configuration" to create a new Configuration.
-* Configuration interface now provide a method "Default(value interface{}) Configuration" to have a default value for nil Properties.
 * Configuration interface now provide a method "HasProperty(name string) bool" to check if a named Property exist or not.
-* Configuration interface now provide a method "Property(name string) property" to always get a Property (with nil value if non existent Property).
+* Configuration interface now provide a method "Property(name string) Property" to always get a Property (with nil value if non existent Property).
+* Configuration interface now provide a method "ValueWithDefault(name string, defaultValue interface{}) interface{}" to always get a value, no possible errors.
+* Property interface now provide a method "WithDefault(defaultValue interface) Property" to get a Property with default value if Property not exist in Configuration.
 
 === 0.2.2
 

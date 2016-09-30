@@ -37,14 +37,14 @@ type Configuration interface {
 	Name() string
 	SetName(name string) Configuration
 	Value(name string) (interface{}, error)
+	ValueWithDefault(name string, defaultValue interface{}) interface{}
 	Add(name string, value interface{}) Configuration
 	Remove(name string) Configuration
 	Size() int
 	Property(name string) Property
 	HasProperty(name string) bool
-	newProperty(name string, value interface{}) Property
+	newProperty(name string, value interface{}, orphanFlag bool) Property
 	properties() map[string]Property
-	Default(value interface{}) Configuration
 }
 
 /*
@@ -54,6 +54,7 @@ with access to their Name and Value
 type Property interface {
 	Name() string
 	Value() interface{}
+	WithDefault(defaultValue interface{}) Property
 }
 
 /*

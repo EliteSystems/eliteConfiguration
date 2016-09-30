@@ -2,7 +2,6 @@ package eliteConfiguration_test
 
 import (
 	"bytes"
-	"fmt"
 	conf "github.com/EliteSystems/eliteConfiguration"
 	"io/ioutil"
 	"os"
@@ -29,16 +28,9 @@ func returnValue(values ...interface{}) []interface{} {
 }
 
 /*
-Print the tested Library's version
-*/
-func TestVersion(t *testing.T) {
-	fmt.Println("EliteConfiguration [" + conf.Version() + "]")
-}
-
-/*
 Try to Load a Configuration from valid JSON file
 */
-func TestLoadValidConfiguration(t *testing.T) {
+func TestImmutableLoadValidConfiguration(t *testing.T) {
 
 	switch configuration, err := conf.Immutable().Load(validConfigurationFile); {
 
@@ -60,7 +52,7 @@ func TestLoadValidConfiguration(t *testing.T) {
 /*
 Try to Load a Configuration from valid JSON file
 */
-func TestLoadInvalidConfiguration(t *testing.T) {
+func TestImmutableLoadInvalidConfiguration(t *testing.T) {
 
 	if _, err := conf.Immutable().Load(invalidConfigurationFile); err == nil {
 		t.Errorf("Load invalid Configuration should has return an error")
@@ -70,7 +62,7 @@ func TestLoadInvalidConfiguration(t *testing.T) {
 /*
 Try to Load a Configuration from valid JSON file
 */
-func TestLoadEmptyConfiguration(t *testing.T) {
+func TestImmutableLoadEmptyConfiguration(t *testing.T) {
 
 	switch configuration, _ := conf.Immutable().Load(emptyConfigurationFile); {
 
@@ -82,7 +74,7 @@ func TestLoadEmptyConfiguration(t *testing.T) {
 /*
 Try to Load a Configuration from non existing file
 */
-func TestLoadNonExistingConfiguration(t *testing.T) {
+func TestImmutableLoadNonExistingConfiguration(t *testing.T) {
 
 	if _, err := conf.Immutable().Load(nonExistingConfigurationFile); err == nil {
 		t.Errorf("Non existing file should has return an error")
@@ -92,7 +84,7 @@ func TestLoadNonExistingConfiguration(t *testing.T) {
 /*
 Try to Add a Value to an empty Configuration
 */
-func TestConfigurationAddValue(t *testing.T) {
+func TestImmutableConfigurationAddValue(t *testing.T) {
 
 	configuration := zeroValueConfiguration.Add("KeyAdded", "ValueAdded")
 	if value, err := configuration.Value("KeyAdded"); err != nil {
@@ -103,7 +95,7 @@ func TestConfigurationAddValue(t *testing.T) {
 /*
 Try to add a Value to validImmutableConfiguration and check the immutability
 */
-func TestConfigurationAddValueImmutability(t *testing.T) {
+func TestImmutableConfigurationAddValueImmutability(t *testing.T) {
 
 	validImmutableConfiguration.Add("NewKey", "NewValue")
 	if _, err := validImmutableConfiguration.Value("NewKey"); err == nil {
@@ -114,7 +106,7 @@ func TestConfigurationAddValueImmutability(t *testing.T) {
 /*
 Try to change a Value of validImmutableConfiguration and check the immutability
 */
-func TestConfigurationChangeValueImmutability(t *testing.T) {
+func TestImmutableConfigurationChangeValueImmutability(t *testing.T) {
 
 	configuration := validImmutableConfiguration.Add("Key1", "NewValue")
 	if returnValue(configuration.Value("Key1"))[0] == returnValue(validImmutableConfiguration.Value("Key1"))[0] {
@@ -125,7 +117,7 @@ func TestConfigurationChangeValueImmutability(t *testing.T) {
 /*
 Try to Remove a Value to the validImmutableConfiguration
 */
-func TestConfigurationRemoveValue(t *testing.T) {
+func TestImmutableConfigurationRemoveValue(t *testing.T) {
 
 	configuration := validImmutableConfiguration.Remove("Key1")
 	if _, err := configuration.Value("Key1"); err == nil {
@@ -136,7 +128,7 @@ func TestConfigurationRemoveValue(t *testing.T) {
 /*
 Try to remove a Value to the validImmutableConfiguration and check the immutability
 */
-func TestConfigurationRemoveValueImmutability(t *testing.T) {
+func TestImmutableConfigurationRemoveValueImmutability(t *testing.T) {
 
 	validImmutableConfiguration.Remove("Key1")
 	if _, err := validImmutableConfiguration.Value("Key1"); err != nil {
@@ -147,7 +139,7 @@ func TestConfigurationRemoveValueImmutability(t *testing.T) {
 /*
 Try to change the Name of a configuration
 */
-func TestNameImmutability(t *testing.T) {
+func TestImmutableNameImmutability(t *testing.T) {
 
 	if configuration := validImmutableConfiguration.SetName("NewName"); configuration.Name() == validImmutableConfiguration.Name() {
 		t.Errorf("Configuration's name is not immutable")
@@ -157,7 +149,7 @@ func TestNameImmutability(t *testing.T) {
 /*
 Try to Save a Configuration with passing no file in argument
 */
-func TestConfigurationSaveWithNoFile(t *testing.T) {
+func TestImmutableConfigurationSaveWithNoFile(t *testing.T) {
 
 	if err := conf.Immutable().Save(validImmutableConfiguration, ""); err == nil {
 		t.Errorf("Save() should return an error when passing no file")
@@ -167,7 +159,7 @@ func TestConfigurationSaveWithNoFile(t *testing.T) {
 /*
 Try to Save a Configuration in an non existing path
 */
-func TestConfigurationSaveWithNonExistingPath(t *testing.T) {
+func TestImmutableConfigurationSaveWithNonExistingPath(t *testing.T) {
 
 	if _, err := os.Stat(nonExistingPath); os.IsNotExist(err) {
 		if err := conf.Immutable().Save(validImmutableConfiguration, nonExistingPath+"file.json"); err == nil {
@@ -181,7 +173,7 @@ func TestConfigurationSaveWithNonExistingPath(t *testing.T) {
 /*
 Try to Save a Configuration in an existing path and Compare result file with valid
 */
-func TestConfigurationSaveWithExistingPath(t *testing.T) {
+func TestImmutableConfigurationSaveWithExistingPath(t *testing.T) {
 
 	// Verify that Save() don't throw any error
 	if err := conf.Immutable().Save(validImmutableConfiguration, testsPath+"save.json"); err != nil {
@@ -202,7 +194,7 @@ func TestConfigurationSaveWithExistingPath(t *testing.T) {
 /*
 Try to get the Property's Value of an existing Name
 */
-func TestConfigurationValueWithExistingPropertyName(t *testing.T) {
+func TestImmutableConfigurationValueWithExistingPropertyName(t *testing.T) {
 
 	value, err := validImmutableConfiguration.Value("Key1")
 	if err != nil {
@@ -217,7 +209,7 @@ func TestConfigurationValueWithExistingPropertyName(t *testing.T) {
 /*
 Try to get the Property's Value of a non-existing Name
 */
-func TestConfigurationValueWithNonExistingPropertyName(t *testing.T) {
+func TestImmutableConfigurationValueWithNonExistingPropertyName(t *testing.T) {
 
 	if _, err := validImmutableConfiguration.Value("Key4"); err == nil {
 		t.Errorf("Configuration.Value(\"Key4\") should return error")
@@ -227,7 +219,7 @@ func TestConfigurationValueWithNonExistingPropertyName(t *testing.T) {
 /*
 Try to get the Property with a non-existing Name
 */
-func TestConfigurationPropertyWithNonExistingName(t *testing.T) {
+func TestImmutableConfigurationPropertyWithNonExistingName(t *testing.T) {
 
 	property := validImmutableConfiguration.Property("Key4")
 	_, ok := property.(conf.Property)
@@ -240,7 +232,7 @@ func TestConfigurationPropertyWithNonExistingName(t *testing.T) {
 /*
 Try to get the Property with an existing Name
 */
-func TestConfigurationPropertyWithExistingName(t *testing.T) {
+func TestImmutableConfigurationPropertyWithExistingName(t *testing.T) {
 
 	property := validImmutableConfiguration.Property("Key3")
 	_, ok := property.(conf.Property)
@@ -253,7 +245,7 @@ func TestConfigurationPropertyWithExistingName(t *testing.T) {
 /*
 Check if Property exist when should exist
 */
-func TestConfigurationHasPropertyWithExistingName(t *testing.T) {
+func TestImmutableConfigurationHasPropertyWithExistingName(t *testing.T) {
 
 	if exist := validImmutableConfiguration.HasProperty("Key3"); !exist {
 		t.Errorf("Configuration.HasProperty(\"Key3\") should return true")
@@ -263,7 +255,7 @@ func TestConfigurationHasPropertyWithExistingName(t *testing.T) {
 /*
 Check if Property exist when should not
 */
-func TestConfigurationHasPropertyWithNonExistingName(t *testing.T) {
+func TestImmutableConfigurationHasPropertyWithNonExistingName(t *testing.T) {
 
 	if exist := validImmutableConfiguration.HasProperty("Key4"); exist {
 		t.Errorf("Configuration.HasProperty(\"Key4\") should return false")
@@ -271,25 +263,69 @@ func TestConfigurationHasPropertyWithNonExistingName(t *testing.T) {
 }
 
 /*
-Check if Non existing Property has the correct default value
+Check if a non existing property name return a property with default value
 */
-func TestConfigurationDefaultValueWithNonExistingName(t *testing.T) {
-
-	if property := validImmutableConfiguration.Default("DefaultValue").Property("Key4"); property.Value().(string) != "DefaultValue" {
-		t.Errorf("Configuration.Default(\"DefaultValue\").Property(\"Key4\") should return \"DefaultValue\", not %v", property.Value())
-	}
-}
-
-/*
-Check immutability for default value of Non existing Property
-*/
-func TestConfigurationDefaultValueWithNonExistingNameImmutability(t *testing.T) {
+func TestImmutableConfigurationPropertyWithNonExistentNameWithDefaultValue(t *testing.T) {
 
 	var nonExistingKey = "Key4"
 	var defaultValue = "DefaultValue"
 
-	validImmutableConfiguration.Default(defaultValue)
-	if property := validImmutableConfiguration.Property(nonExistingKey); property.Value() != nil {
-		t.Errorf("Configuration.Default() is not immutable")
+	if property := validImmutableConfiguration.Property(nonExistingKey).WithDefault(defaultValue); property.Value() != defaultValue {
+		t.Errorf("Property.WithDefault(\"%v\") should be \"%v\" not \"%v\"", defaultValue, defaultValue, property.Value())
+	}
+}
+
+/*
+Check immutability of a non existing property name that return a property with default value
+*/
+func TestImmutableConfigurationPropertyWithNonExistentNameWithDefaultValueImmutability(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+	var defaultValue = "DefaultValue"
+	var property = validImmutableConfiguration.Property(nonExistingKey)
+
+	if property.WithDefault(defaultValue).Value() == property.Value() {
+		t.Errorf("Property.WithDefault(\"%v\") should be \"%v\" not \"%v\"", defaultValue, defaultValue, property.Value())
+	}
+}
+
+/*
+Check if an existing property name return a property with value not changed by defaultValue
+*/
+func TestImmutableConfigurationPropertyWithExistingNameWithDefaultValue(t *testing.T) {
+
+	var existingKey = "Key3"
+	var expectedValue = "Value3"
+	var defaultValue = "DefaultValue"
+
+	if property := validImmutableConfiguration.Property(existingKey).WithDefault(defaultValue); property.Value() != expectedValue {
+		t.Errorf("Property.WithDefault(\"%v\") should not be \"%v\" not \"%v\"", defaultValue, expectedValue, property.Value())
+	}
+}
+
+/*
+Check the returned value for ValueWithDefault and a non existing property name
+*/
+func TestImmutableConfigurationValueWithDefaultWithNonExistingName(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+	var defaultValue = "DefaultValue"
+
+	if value := validImmutableConfiguration.ValueWithDefault(nonExistingKey, defaultValue); value != defaultValue {
+		t.Errorf("Configuration.ValueWithDefault(\"%v\", %v) should be \"%v\" not \"%v\"", nonExistingKey, defaultValue, defaultValue, value)
+	}
+}
+
+/*
+Check if an existing property name return a property with value not changed by defaultValue
+*/
+func TestImmutableConfigurationValueWithDefaultWithExistingName(t *testing.T) {
+
+	var existingKey = "Key3"
+	var expectedValue = "Value3"
+	var defaultValue = "DefaultValue"
+
+	if value := validImmutableConfiguration.ValueWithDefault(existingKey, defaultValue); value != expectedValue {
+		t.Errorf("Configuration.ValueWithDefault(\"%v\", %v) should be \"%v\" not \"%v\"", existingKey, defaultValue, expectedValue, value)
 	}
 }
