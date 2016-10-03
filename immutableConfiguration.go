@@ -127,6 +127,13 @@ func (configuration immutableConfiguration) HasProperty(requiredName string) boo
 }
 
 /*
+todo: AddProperty add a Property to the Configuration returned
+*/
+func (configuration immutableConfiguration) AddProperty(property Property) Configuration {
+	return configuration
+}
+
+/*
 newProperty instantiate and return an appropriate Configuration's Property
 */
 func (configuration immutableConfiguration) newProperty(requiredName string, optionalValue interface{}, orphanFlag bool) Property {
