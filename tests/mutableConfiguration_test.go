@@ -339,10 +339,10 @@ func TestMutableConfigurationAddPropertyWithNonExistingName(t *testing.T) {
 
 	if !validMutableConfiguration.HasProperty(nonExistingKey) {
 		if !validMutableConfiguration.AddProperty(validMutableConfiguration.Property(nonExistingKey)).HasProperty(nonExistingKey) {
-			t.Errorf("Configuration.AddProperty(...).HasProperty(%v) should be true", nonExistingKey)
+			t.Errorf("Configuration.AddProperty(...).HasProperty(\"%v\") should be true", nonExistingKey)
 		}
 	} else {
-		t.Skip("Configuration.HasProperty(%v) should be false", nonExistingKey)
+		t.Skip("Configuration.HasProperty(\"%v\") should be false", nonExistingKey)
 	}
 
 	validMutableConfiguration.Remove(nonExistingKey)
@@ -357,10 +357,10 @@ func TestMutableConfigurationAddPropertyWithExistingName(t *testing.T) {
 
 	if validMutableConfiguration.HasProperty(existingKey) {
 		if !validMutableConfiguration.AddProperty(validMutableConfiguration.Property(existingKey)).HasProperty(existingKey) {
-			t.Errorf("Configuration.AddProperty(...).HasProperty(%v) should be true", existingKey)
+			t.Errorf("Configuration.AddProperty(...).HasProperty(\"%v\") should be true", existingKey)
 		}
 	} else {
-		t.Skip("Configuration.HasProperty(%v) should be true", existingKey)
+		t.Skip("Configuration.HasProperty(\"%v\") should be true", existingKey)
 	}
 }
 
@@ -373,10 +373,10 @@ func TestMutableConfigurationAddPropertyMutability(t *testing.T) {
 
 	if !validMutableConfiguration.HasProperty(nonExistingKey) {
 		if validMutableConfiguration.AddProperty(validMutableConfiguration.Property(nonExistingKey)); !validMutableConfiguration.HasProperty(nonExistingKey) {
-			t.Errorf("Configuration.AddProperty(...).HasProperty(%v) should be mutable", nonExistingKey)
+			t.Errorf("Configuration.AddProperty(...).HasProperty(\"%v\") should be mutable", nonExistingKey)
 		}
 	} else {
-		t.Skip("Configuration.HasProperty(%v) should be false", nonExistingKey)
+		t.Skip("Configuration.HasProperty(\"%v\") should be false", nonExistingKey)
 	}
 
 	validMutableConfiguration.Remove(nonExistingKey)

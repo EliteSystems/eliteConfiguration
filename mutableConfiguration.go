@@ -56,9 +56,8 @@ func (configuration *mutableConfiguration) Add(requiredName string, optionalValu
 
 	// Add new Property
 	var orphanFlag = false
-	configuration.AddProperty(configuration.newProperty(requiredName, optionalValue, orphanFlag))
+	return configuration.AddProperty(configuration.newProperty(requiredName, optionalValue, orphanFlag))
 
-	return configuration
 }
 
 /*

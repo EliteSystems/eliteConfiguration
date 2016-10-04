@@ -54,21 +54,9 @@ Add a Property to the new Configuration returned
 */
 func (configuration immutableConfiguration) Add(requiredName string, optionalValue interface{}) Configuration {
 
-	// Initialize a map copy and add it the new Property
-	mapCopy := make(map[string]Property)
-	if configuration.iProperties != nil {
-		for key, value := range configuration.iProperties {
-			mapCopy[key] = value
-		}
-	}
-
 	var orphanFlag = false
-	mapCopy[requiredName] = configuration.newProperty(requiredName, optionalValue, orphanFlag)
+	return configuration.AddProperty(configuration.newProperty(requiredName, optionalValue, orphanFlag))
 
-	// Change the map of configuration with the copy
-	configuration.iProperties = mapCopy
-
-	return configuration
 }
 
 /*
@@ -127,9 +115,22 @@ func (configuration immutableConfiguration) HasProperty(requiredName string) boo
 }
 
 /*
-todo: AddProperty add a Property to the Configuration returned
+AddProperty add a Property to the Configuration returned
 */
 func (configuration immutableConfiguration) AddProperty(property Property) Configuration {
+
+	// Initialize a map copy and add it the new Property
+	mapCopy := make(map[string]Property)
+	if configuration.iProperties != nil {
+		for key, value := range configuration.iProperties {
+			mapCopy[key] = value
+		}
+	}
+	mapCopy[property.Name()] = property
+
+	// Change the map of configuration with the copy
+	configuration.iProperties = mapCopy
+
 	return configuration
 }
 
