@@ -168,7 +168,7 @@ Try to Save a Configuration with passing no file in argument
 func TestMutableConfigurationSaveWithNoFile(t *testing.T) {
 
 	if err := conf.Mutable().Save(validMutableConfiguration, ""); err == nil {
-		t.Errorf("Save() should return an error when passing no file")
+		t.Error("Save() should return an error when passing no file")
 	}
 }
 
@@ -179,7 +179,7 @@ func TestMutableConfigurationSaveWithNonExistingPath(t *testing.T) {
 
 	if _, err := os.Stat(nonExistingPath); os.IsNotExist(err) {
 		if err := conf.Mutable().Save(validMutableConfiguration, nonExistingPath+"file.json"); err == nil {
-			t.Errorf("Save() should return error for non existing directory")
+			t.Error("Save() should return error for non existing directory")
 		}
 	} else {
 		t.Errorf("Test can't be performed, the path %v should not exist", nonExistingPath)
@@ -194,13 +194,13 @@ func TestMutableConfigurationSaveWithExistingPath(t *testing.T) {
 	// Verify that Save() don't throw any error
 	configurationToSave := conf.Mutable().New("validConfiguration").Add("Key1", "Value1").Add("Key2", "Value2").Add("Key3", "Value3")
 	if err := conf.Mutable().Save(configurationToSave, testsPath+"save.json"); err != nil {
-		t.Errorf("Save() should not return an error")
+		t.Error("Save() should not return an error")
 	}
 
 	// Compare the saved file content with the validConfigurationFile content
 	if jsonContent, err := ioutil.ReadFile(testsPath + "save.json"); err == nil {
 		if compareContent, _ := ioutil.ReadFile(validConfigurationFile); bytes.Compare(jsonContent, compareContent) != 0 {
-			t.Errorf("Save(): the JSON content saved is not equal to validConfiguration.json file")
+			t.Error("Save(): the JSON content saved is not equal to validConfiguration.json file")
 		}
 	}
 
@@ -236,7 +236,7 @@ Try to Load a Configuration from valid JSON file
 func TestMutableLoadInvalidConfiguration(t *testing.T) {
 
 	if _, err := conf.Mutable().Load(invalidConfigurationFile); err == nil {
-		t.Errorf("Load invalid Configuration should has return an error")
+		t.Error("Load invalid Configuration should has return an error")
 	}
 }
 
@@ -248,7 +248,7 @@ func TestMutableLoadEmptyConfiguration(t *testing.T) {
 	switch configuration, _ := conf.Mutable().Load(emptyConfigurationFile); {
 
 	case configuration.Size() == 0:
-		t.Errorf("EmptyConfiguration should contains the rootPath Property")
+		t.Error("EmptyConfiguration should contains the rootPath Property")
 	}
 }
 
@@ -258,7 +258,7 @@ Try to Load a Configuration from non existing file
 func TestMutableLoadNonExistingConfiguration(t *testing.T) {
 
 	if _, err := conf.Mutable().Load(nonExistingConfigurationFile); err == nil {
-		t.Errorf("Non existing file should has return an error")
+		t.Error("Non existing file should has return an error")
 	}
 }
 
@@ -328,4 +328,56 @@ func TestMutableConfigurationValueWithDefaultWithExistingName(t *testing.T) {
 	if value := validMutableConfiguration.ValueWithDefault(existingKey, defaultValue); value != expectedValue {
 		t.Errorf("Configuration.ValueWithDefault(\"%v\", %v) should be \"%v\" not \"%v\"", existingKey, defaultValue, expectedValue, value)
 	}
+}
+
+/*
+Check if the property with a non existing name has been added to the configuration
+*/
+func TestMutableConfigurationAddPropertyWithNonExistingName(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+
+	if !validMutableConfiguration.HasProperty(nonExistingKey) {
+		if !validMutableConfiguration.AddProperty(validMutableConfiguration.Property(nonExistingKey)).HasProperty(nonExistingKey) {
+			t.Errorf("Configuration.AddProperty(...).HasProperty(\"%v\") should be true", nonExistingKey)
+		}
+	} else {
+		t.Skip("Configuration.HasProperty(\"%v\") should be false", nonExistingKey)
+	}
+
+	validMutableConfiguration.Remove(nonExistingKey)
+}
+
+/*
+Check if the property with an existing name has been changed to the configuration
+*/
+func TestMutableConfigurationAddPropertyWithExistingName(t *testing.T) {
+
+	var existingKey = "Key3"
+
+	if validMutableConfiguration.HasProperty(existingKey) {
+		if !validMutableConfiguration.AddProperty(validMutableConfiguration.Property(existingKey)).HasProperty(existingKey) {
+			t.Errorf("Configuration.AddProperty(...).HasProperty(\"%v\") should be true", existingKey)
+		}
+	} else {
+		t.Skip("Configuration.HasProperty(\"%v\") should be true", existingKey)
+	}
+}
+
+/*
+Check the mutability of the AddProperty method
+*/
+func TestMutableConfigurationAddPropertyMutability(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+
+	if !validMutableConfiguration.HasProperty(nonExistingKey) {
+		if validMutableConfiguration.AddProperty(validMutableConfiguration.Property(nonExistingKey)); !validMutableConfiguration.HasProperty(nonExistingKey) {
+			t.Errorf("Configuration.AddProperty(...).HasProperty(\"%v\") should be mutable", nonExistingKey)
+		}
+	} else {
+		t.Skip("Configuration.HasProperty(\"%v\") should be false", nonExistingKey)
+	}
+
+	validMutableConfiguration.Remove(nonExistingKey)
 }

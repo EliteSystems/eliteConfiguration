@@ -55,7 +55,7 @@ Try to Load a Configuration from valid JSON file
 func TestImmutableLoadInvalidConfiguration(t *testing.T) {
 
 	if _, err := conf.Immutable().Load(invalidConfigurationFile); err == nil {
-		t.Errorf("Load invalid Configuration should has return an error")
+		t.Error("Load invalid Configuration should has return an error")
 	}
 }
 
@@ -67,7 +67,7 @@ func TestImmutableLoadEmptyConfiguration(t *testing.T) {
 	switch configuration, _ := conf.Immutable().Load(emptyConfigurationFile); {
 
 	case configuration.Size() == 0:
-		t.Errorf("EmptyConfiguration should contains the rootPath Property")
+		t.Error("EmptyConfiguration should contains the rootPath Property")
 	}
 }
 
@@ -77,7 +77,7 @@ Try to Load a Configuration from non existing file
 func TestImmutableLoadNonExistingConfiguration(t *testing.T) {
 
 	if _, err := conf.Immutable().Load(nonExistingConfigurationFile); err == nil {
-		t.Errorf("Non existing file should has return an error")
+		t.Error("Non existing file should has return an error")
 	}
 }
 
@@ -99,7 +99,7 @@ func TestImmutableConfigurationAddValueImmutability(t *testing.T) {
 
 	validImmutableConfiguration.Add("NewKey", "NewValue")
 	if _, err := validImmutableConfiguration.Value("NewKey"); err == nil {
-		t.Errorf("validImmutableConfiguration is not immutable when adding value")
+		t.Error("validImmutableConfiguration is not immutable when adding value")
 	}
 }
 
@@ -110,7 +110,7 @@ func TestImmutableConfigurationChangeValueImmutability(t *testing.T) {
 
 	configuration := validImmutableConfiguration.Add("Key1", "NewValue")
 	if returnValue(configuration.Value("Key1"))[0] == returnValue(validImmutableConfiguration.Value("Key1"))[0] {
-		t.Errorf("validImmutableConfiguration is not immutable when changing value")
+		t.Error("validImmutableConfiguration is not immutable when changing value")
 	}
 }
 
@@ -121,7 +121,7 @@ func TestImmutableConfigurationRemoveValue(t *testing.T) {
 
 	configuration := validImmutableConfiguration.Remove("Key1")
 	if _, err := configuration.Value("Key1"); err == nil {
-		t.Errorf("Remove(\"Key1\") should has removed the \"Key1\" Property")
+		t.Error("Remove(\"Key1\") should has removed the \"Key1\" Property")
 	}
 }
 
@@ -132,7 +132,7 @@ func TestImmutableConfigurationRemoveValueImmutability(t *testing.T) {
 
 	validImmutableConfiguration.Remove("Key1")
 	if _, err := validImmutableConfiguration.Value("Key1"); err != nil {
-		t.Errorf("validImmutableConfiguration is not immutable when removing value")
+		t.Error("validImmutableConfiguration is not immutable when removing value")
 	}
 }
 
@@ -142,7 +142,7 @@ Try to change the Name of a configuration
 func TestImmutableNameImmutability(t *testing.T) {
 
 	if configuration := validImmutableConfiguration.SetName("NewName"); configuration.Name() == validImmutableConfiguration.Name() {
-		t.Errorf("Configuration's name is not immutable")
+		t.Error("Configuration's name is not immutable")
 	}
 }
 
@@ -152,7 +152,7 @@ Try to Save a Configuration with passing no file in argument
 func TestImmutableConfigurationSaveWithNoFile(t *testing.T) {
 
 	if err := conf.Immutable().Save(validImmutableConfiguration, ""); err == nil {
-		t.Errorf("Save() should return an error when passing no file")
+		t.Error("Save() should return an error when passing no file")
 	}
 }
 
@@ -163,7 +163,7 @@ func TestImmutableConfigurationSaveWithNonExistingPath(t *testing.T) {
 
 	if _, err := os.Stat(nonExistingPath); os.IsNotExist(err) {
 		if err := conf.Immutable().Save(validImmutableConfiguration, nonExistingPath+"file.json"); err == nil {
-			t.Errorf("Save() should return error for non existing directory")
+			t.Error("Save() should return error for non existing directory")
 		}
 	} else {
 		t.Errorf("Test can't be performed, the path %v should not exist", nonExistingPath)
@@ -177,13 +177,13 @@ func TestImmutableConfigurationSaveWithExistingPath(t *testing.T) {
 
 	// Verify that Save() don't throw any error
 	if err := conf.Immutable().Save(validImmutableConfiguration, testsPath+"save.json"); err != nil {
-		t.Errorf("Save() should not return an error")
+		t.Error("Save() should not return an error")
 	}
 
 	// Compare the saved file content with the validConfigurationFile content
 	if jsonContent, err := ioutil.ReadFile(testsPath + "save.json"); err == nil {
 		if compareContent, _ := ioutil.ReadFile(validConfigurationFile); bytes.Compare(jsonContent, compareContent) != 0 {
-			t.Errorf("Save(): the JSON content saved is not equal to validConfiguration.json file")
+			t.Error("Save(): the JSON content saved is not equal to validConfiguration.json file")
 		}
 	}
 
@@ -198,11 +198,11 @@ func TestImmutableConfigurationValueWithExistingPropertyName(t *testing.T) {
 
 	value, err := validImmutableConfiguration.Value("Key1")
 	if err != nil {
-		t.Errorf("Configuration.Value(\"Key1\") shouldn't return error")
+		t.Error("Configuration.Value(\"Key1\") shouldn't return error")
 	}
 
 	if value != "Value1" {
-		t.Errorf("Configuration.Value(\"Key1\") should be \"Value1\"")
+		t.Error("Configuration.Value(\"Key1\") should be \"Value1\"")
 	}
 }
 
@@ -212,7 +212,7 @@ Try to get the Property's Value of a non-existing Name
 func TestImmutableConfigurationValueWithNonExistingPropertyName(t *testing.T) {
 
 	if _, err := validImmutableConfiguration.Value("Key4"); err == nil {
-		t.Errorf("Configuration.Value(\"Key4\") should return error")
+		t.Error("Configuration.Value(\"Key4\") should return error")
 	}
 }
 
@@ -225,7 +225,7 @@ func TestImmutableConfigurationPropertyWithNonExistingName(t *testing.T) {
 	_, ok := property.(conf.Property)
 
 	if property == nil || !ok {
-		t.Errorf("Configuration.Property(\"Key4\") should return a Property")
+		t.Error("Configuration.Property(\"Key4\") should return a Property")
 	}
 }
 
@@ -238,7 +238,7 @@ func TestImmutableConfigurationPropertyWithExistingName(t *testing.T) {
 	_, ok := property.(conf.Property)
 
 	if property == nil || !ok {
-		t.Errorf("Configuration.Property(\"Key3\") should return a Property")
+		t.Error("Configuration.Property(\"Key3\") should return a Property")
 	}
 }
 
@@ -248,7 +248,7 @@ Check if Property exist when should exist
 func TestImmutableConfigurationHasPropertyWithExistingName(t *testing.T) {
 
 	if exist := validImmutableConfiguration.HasProperty("Key3"); !exist {
-		t.Errorf("Configuration.HasProperty(\"Key3\") should return true")
+		t.Error("Configuration.HasProperty(\"Key3\") should return true")
 	}
 }
 
@@ -258,7 +258,7 @@ Check if Property exist when should not
 func TestImmutableConfigurationHasPropertyWithNonExistingName(t *testing.T) {
 
 	if exist := validImmutableConfiguration.HasProperty("Key4"); exist {
-		t.Errorf("Configuration.HasProperty(\"Key4\") should return false")
+		t.Error("Configuration.HasProperty(\"Key4\") should return false")
 	}
 }
 
@@ -327,5 +327,53 @@ func TestImmutableConfigurationValueWithDefaultWithExistingName(t *testing.T) {
 
 	if value := validImmutableConfiguration.ValueWithDefault(existingKey, defaultValue); value != expectedValue {
 		t.Errorf("Configuration.ValueWithDefault(\"%v\", %v) should be \"%v\" not \"%v\"", existingKey, defaultValue, expectedValue, value)
+	}
+}
+
+/*
+Check if the property with a non existing name has been added to the configuration
+*/
+func TestImmutableConfigurationAddPropertyWithNonExistingName(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+
+	if !validImmutableConfiguration.HasProperty(nonExistingKey) {
+		if !validImmutableConfiguration.AddProperty(validImmutableConfiguration.Property(nonExistingKey)).HasProperty(nonExistingKey) {
+			t.Errorf("Configuration.AddProperty(...).HasProperty(\"%v\") should be true", nonExistingKey)
+		}
+	} else {
+		t.Skip("Configuration.HasProperty(\"%v\") should be false", nonExistingKey)
+	}
+}
+
+/*
+Check if the property with an existing name has been changed to the configuration
+*/
+func TestImmutableConfigurationAddPropertyWithExistingName(t *testing.T) {
+
+	var existingKey = "Key3"
+
+	if validImmutableConfiguration.HasProperty(existingKey) {
+		if !validImmutableConfiguration.AddProperty(validImmutableConfiguration.Property(existingKey)).HasProperty(existingKey) {
+			t.Errorf("Configuration.AddProperty(...).HasProperty(\"%v\") should be true", existingKey)
+		}
+	} else {
+		t.Skip("Configuration.HasProperty(\"%v\") should be true", existingKey)
+	}
+}
+
+/*
+Check the immutability of the AddProperty method
+*/
+func TestImmutableConfigurationAddPropertyImmutability(t *testing.T) {
+
+	var nonExistingKey = "Key4"
+
+	if !validImmutableConfiguration.HasProperty(nonExistingKey) {
+		if validImmutableConfiguration.AddProperty(validImmutableConfiguration.Property(nonExistingKey)); validImmutableConfiguration.HasProperty(nonExistingKey) {
+			t.Errorf("Configuration.AddProperty(...).HasProperty(\"%v\") should be immutable", nonExistingKey)
+		}
+	} else {
+		t.Skip("Configuration.HasProperty(\"%v\") should be false", nonExistingKey)
 	}
 }

@@ -60,18 +60,22 @@ Mutable Configurations :: are available if needed for better performances on ver
 
 === 0.3.0
 
-* API now has *mutableConfiguration struct for better performances in very large Configurations.
-* API now provide a function "Default()" to use the default and recommended API.
-* API now provide a function "Immutable()" to explicitly use the immutable API.
-* API now provide a function "Mutable()" to explicitly use the mutable API.
-* Adding "API" interface to call exposed functions
-** "API" interface now provide a function "Load(fileName string) (Configuration, error)" to Load a JSON configuration file with a Property "RootPathKey" in all cases.
-** "API" interface now provide a function "Save(configuration Configuration, fileName string) error" to save a configuration into JSON file.
-** "API" interface now provide a function "New(requiredName string) Configuration" to create a new Configuration.
-* Configuration interface now provide a method "HasProperty(name string) bool" to check if a named Property exist or not.
-* Configuration interface now provide a method "Property(name string) Property" to always get a Property (with nil value if non existent Property).
-* Configuration interface now provide a method "ValueWithDefault(name string, defaultValue interface{}) interface{}" to always get a value, no possible errors.
-* Property interface now provide a method "WithDefault(defaultValue interface) Property" to get a Property with default value if Property not exist in Configuration.
+* Modify *eliteConfiguration* library
+** _eliteConfiguration_ now has *mutableConfiguration struct for better performances in very large Configurations.
+** _eliteConfiguration_ now provide a function "Default()" to use the default and recommended API.
+** _eliteConfiguration_ now provide a function "Immutable()" to explicitly use the immutable API.
+** _eliteConfiguration_ now provide a function "Mutable()" to explicitly use the mutable API.
+* Adding *API* interface to call exposed functions
+** _API_ now provide a function "Load(fileName string) (Configuration, error)" to Load a JSON configuration file with a Property "RootPathKey" in all cases.
+** _API_ now provide a function "Save(configuration Configuration, fileName string) error" to save a configuration into JSON file.
+** _API_ now provide a function "New(requiredName string) Configuration" to create a new Configuration.
+* Modify *Configuration* interface
+** _Configuration_ now provide a method "HasProperty(name string) bool" to check if a named Property exist or not.
+** _Configuration_ now provide a method "Property(name string) Property" to always get a Property (with nil value if non existent Property).
+** _Configuration_ now provide a method "ValueWithDefault(name string, defaultValue interface{}) interface{}" to always get a value, no possible errors.
+** _Configuration_ now provide a method "AddProperty(property Property) Configuration" to add a property into configuration.
+* Modify *Property* interface
+** _Property_ now provide a method "WithDefault(defaultValue interface) Property" to get a Property with default value if Property doesn't exist in Configuration.
 
 === 0.2.2
 

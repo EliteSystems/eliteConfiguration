@@ -54,16 +54,10 @@ Add a Property to the Configuration returned
 */
 func (configuration *mutableConfiguration) Add(requiredName string, optionalValue interface{}) Configuration {
 
-	// Initialize map if needed
-	if configuration.iProperties == nil {
-		configuration.iProperties = make(map[string]Property)
-	}
-
 	// Add new Property
 	var orphanFlag = false
-	configuration.iProperties[requiredName] = configuration.newProperty(requiredName, optionalValue, orphanFlag)
+	return configuration.AddProperty(configuration.newProperty(requiredName, optionalValue, orphanFlag))
 
-	return configuration
 }
 
 /*
@@ -110,6 +104,22 @@ func (configuration *mutableConfiguration) HasProperty(requiredName string) bool
 		return true
 	}
 	return false
+}
+
+/*
+AddProperty add a Property to the Configuration returned
+*/
+func (configuration *mutableConfiguration) AddProperty(property Property) Configuration {
+
+	// Initialize map if needed
+	if configuration.iProperties == nil {
+		configuration.iProperties = make(map[string]Property)
+	}
+
+	// Add new Property
+	configuration.iProperties[property.Name()] = property
+
+	return configuration
 }
 
 /*
