@@ -2,8 +2,8 @@ package eliteConfiguration
 
 const (
 	version = "0"
-	release = "2"
-	hotfix  = "2"
+	release = "3"
+	hotfix  = "0"
 	feature = "0"
 )
 
